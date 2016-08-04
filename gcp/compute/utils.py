@@ -102,7 +102,8 @@ def create_resource(func):
                 if is_missing_resource_error(error):
                     name = ctx.node.properties.get(constants.RESOURCE_ID)
                     raise NonRecoverableError(
-                        'Resource {0} defined as external, but does not exist. Error: {1}'.
+                        'Resource {0} defined as external, '
+                        'but does not exist. Error: {1}'.
                         format(name, str(error)))
                 else:
                     raise error
@@ -271,7 +272,8 @@ def get_key_user_string(user, public_key):
 
 def get_agent_ssh_key_string():
     try:
-        return ctx.provider_context['resources']['cloudify_agent']['public_key']
+        return ctx.provider_context['resources'][
+                'cloudify_agent']['public_key']
     except KeyError:
         # means that we are bootstrapping the manager
         return ''

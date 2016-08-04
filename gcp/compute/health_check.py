@@ -135,11 +135,12 @@ class HttpsHealthCheck(HealthCheck):
 def create(name, health_check_type, additional_settings, **kwargs):
     name = utils.get_final_resource_name(name)
     gcp_config = utils.get_gcp_config()
-    health_check = health_check_of_type(health_check_type,
-                                        config=gcp_config,
-                                        logger=ctx.logger,
-                                        name=name,
-                                        additional_settings=additional_settings)
+    health_check = health_check_of_type(
+            health_check_type,
+            config=gcp_config,
+            logger=ctx.logger,
+            name=name,
+            additional_settings=additional_settings)
     utils.create(health_check)
     ctx.instance.runtime_properties[constants.NAME] = name
     ctx.instance.runtime_properties[constants.HEALTH_CHECK_TYPE] = \

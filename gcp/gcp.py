@@ -69,7 +69,8 @@ class GoogleCloudPlatform(object):
         self.scope = scope
         self.name = name
         self.logger = logger.getChild('GCP')
-        self.discovery = self.create_discovery(discovery, self.scope, api_version)
+        self.discovery = self.create_discovery(
+                discovery, self.scope, api_version)
         self.api_version = api_version
         self.body = {}
 

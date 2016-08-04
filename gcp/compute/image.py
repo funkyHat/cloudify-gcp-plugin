@@ -70,7 +70,8 @@ class Image(GoogleCloudPlatform):
                                               image=self.name).execute()
 
     def list(self):
-        image_list = self.discovery.images().list(project=self.project).execute()
+        image_list = self.discovery.images().list(
+                project=self.project).execute()
         return image_list['items']
 
     def list_objects(self):

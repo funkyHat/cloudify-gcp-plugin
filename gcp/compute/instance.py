@@ -349,6 +349,7 @@ def start(name,
                         name=name)
     set_ip(instance)
 
+
 @operation
 @utils.retry_on_failure('Retrying deleting instance')
 @utils.throw_cloudify_exceptions
@@ -407,7 +408,10 @@ def add_external_ip(instance_name, **kwargs):
                         ctx.logger,
                         name=instance_name)
     if ip_node.properties[constants.USE_EXTERNAL_RESOURCE]:
-        ip_address = ip_node.properties.get('ip_address') or ctx.target.instance.runtime_properties.get(constants.IP)
+        ip_address = (
+                ip_node.properties.get('ip_address') or
+                ctx.target.instance.runtime_properties.get(constants.IP)
+                )
         if not ip_address:
             raise GCPError('{} is set, but ip_address is not set'
                            .format(constants.USE_EXTERNAL_RESOURCE))
@@ -486,7 +490,8 @@ def set_ip(instance, relationship=False):
                 item['networkInterfaces'][0]['networkIP']
         # only with one default network interface
     except (TypeError, KeyError):
-        ctx.operation.retry('The instance has not yet created network interface', 10)
+        ctx.operation.retry(
+                'The instance has not yet created network interface', 10)
 
 
 def add_to_security_groups(instance):
