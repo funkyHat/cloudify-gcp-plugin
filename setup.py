@@ -32,7 +32,7 @@ setup(
         "oauth2client==1.4.6",
         "google-api-python-client==1.4.0",
         "pyyaml",
-        "Crypto"
+        "pycrypto",
     ],
     test_requires=[
         "cloudify-dsl-parser>=3.3.1",
