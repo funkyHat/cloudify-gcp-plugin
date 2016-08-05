@@ -15,11 +15,10 @@
 
 from functools import wraps
 
-import Crypto
 import httplib2
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from oauth2client.client import SignedJwtAssertionCredentials
+from oauth2client.service_account import ServiceAccountCredentials
 from cloudify.decorators import operation
 
 from compute import constants
@@ -85,12 +84,10 @@ class GoogleCloudPlatform(object):
         :raise: GCPError if there is a problem with service account JSON file:
         e.g. the file is not under the given path or it has wrong permissions
         """
-        Crypto.Random.atfork()
         try:
-            credentials = SignedJwtAssertionCredentials(
-                self.auth['client_email'],
-                self.auth['private_key'],
-                scope=scope)
+            credentials = ServiceAccountCredentials.from_json_keyfile_dict(
+                self.auth,
+                scopes=scope)
             http = httplib2.Http()
             credentials.authorize(http)
             return build(discovery, api_version, http=http)
