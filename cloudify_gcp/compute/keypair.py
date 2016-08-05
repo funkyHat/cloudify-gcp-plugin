@@ -21,7 +21,7 @@ from cloudify import ctx
 from cloudify.decorators import operation
 
 from .. import constants
-from cloudify_gcp.compute import utils
+from .. import utils
 from cloudify_gcp.gcp import check_response
 from cloudify_gcp.gcp import GoogleCloudPlatform
 from cloudify_gcp.gcp import GCPError

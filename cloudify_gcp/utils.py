@@ -23,7 +23,7 @@ from googleapiclient.errors import HttpError
 from cloudify import ctx
 from cloudify.exceptions import NonRecoverableError
 
-from .. import constants
+from . import constants
 from cloudify_gcp.gcp import GCPError, GoogleCloudPlatform
 from cloudify_gcp.gcp import check_response
 from cloudify_gcp.gcp import is_missing_resource_error, is_resource_used_error

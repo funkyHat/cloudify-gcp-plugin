@@ -16,7 +16,7 @@
 
 import unittest
 
-from cloudify_gcp.compute import utils
+from cloudify_gcp import utils
 
 
 class TestUtils(unittest.TestCase):
