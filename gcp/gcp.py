@@ -19,7 +19,6 @@ import httplib2
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from oauth2client.service_account import ServiceAccountCredentials
-from cloudify.decorators import operation
 
 from compute import constants
 
@@ -139,8 +138,3 @@ def is_missing_resource_error(error):
 
 def is_resource_used_error(error):
     return isinstance(error, HttpError) and error.resp.status == 400
-
-
-@operation
-def dummy_operation(**kwargs):
-    pass
