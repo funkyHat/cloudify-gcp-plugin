@@ -133,15 +133,12 @@ class GCPError(Exception):
         super(GCPError, self).__init__(message)
 
 
-GCPHttpError = HttpError
-
-
 def is_missing_resource_error(error):
-    return isinstance(error, GCPHttpError) and error.resp.status == 404
+    return isinstance(error, HttpError) and error.resp.status == 404
 
 
 def is_resource_used_error(error):
-    return isinstance(error, GCPHttpError) and error.resp.status == 400
+    return isinstance(error, HttpError) and error.resp.status == 400
 
 
 @operation

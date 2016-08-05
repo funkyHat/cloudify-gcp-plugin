@@ -12,16 +12,18 @@
 #    * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
+
 import re
 import time
-
 from copy import deepcopy
 from functools import wraps
+
+from googleapiclient.errors import HttpError
 
 from cloudify import ctx
 from cloudify.exceptions import NonRecoverableError
 
-from gcp.gcp import GCPError, GCPHttpError, GoogleCloudPlatform
+from gcp.gcp import GCPError, GoogleCloudPlatform
 from gcp.gcp import check_response
 from gcp.gcp import is_missing_resource_error, is_resource_used_error
 from gcp.compute import constants
@@ -98,7 +100,7 @@ def create_resource(func):
             try:
                 resource.body = resource.get()
                 resource.update_model()
-            except GCPHttpError as error:
+            except HttpError as error:
                 if is_missing_resource_error(error):
                     name = ctx.node.properties.get(constants.RESOURCE_ID)
                     raise NonRecoverableError(
@@ -140,7 +142,7 @@ def retry_on_failure(msg, delay=constants.RETRY_DEFAULT_DELAY):
         def _decorator(*args, **kwargs):
             try:
                 return func(*args, **kwargs)
-            except GCPHttpError as error:
+            except HttpError as error:
                 if is_resource_used_error(error):
                     ctx.operation.retry(msg, delay)
                 else:
@@ -247,7 +249,7 @@ def create_firewall_structure_from_rules(network, rules):
 def is_object_deleted(obj):
     try:
         obj.get()
-    except GCPHttpError as error:
+    except HttpError as error:
         if is_missing_resource_error(error):
             return True
     return False
