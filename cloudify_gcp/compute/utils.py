@@ -23,10 +23,10 @@ from googleapiclient.errors import HttpError
 from cloudify import ctx
 from cloudify.exceptions import NonRecoverableError
 
-from gcp.gcp import GCPError, GoogleCloudPlatform
-from gcp.gcp import check_response
-from gcp.gcp import is_missing_resource_error, is_resource_used_error
-from gcp.compute import constants
+from cloudify_gcp.gcp import GCPError, GoogleCloudPlatform
+from cloudify_gcp.gcp import check_response
+from cloudify_gcp.gcp import is_missing_resource_error, is_resource_used_error
+from cloudify_gcp.compute import constants
 
 
 def get_item_from_gcp_response(key_field, key_name, items):

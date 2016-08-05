@@ -16,10 +16,10 @@
 from cloudify import ctx
 from cloudify.decorators import operation
 
-from gcp.compute import constants
-from gcp.compute import utils
-from gcp.gcp import GoogleCloudPlatform
-from gcp.gcp import check_response
+from cloudify_gcp.compute import constants
+from cloudify_gcp.compute import utils
+from cloudify_gcp.gcp import GoogleCloudPlatform
+from cloudify_gcp.gcp import check_response
 
 
 class Network(GoogleCloudPlatform):

@@ -23,7 +23,10 @@ setup(
     version='0.1',
     description='Plugin for Google Cloud Platform',
 
-    packages=['gcp', 'gcp/compute'],
+    packages=[
+        'cloudify_gcp',
+        'cloudify_gcp.compute',
+        ],
 
     license='LICENSE',
     zip_safe=False,
