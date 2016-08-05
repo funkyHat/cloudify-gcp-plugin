@@ -56,11 +56,6 @@ class BackendService(GoogleCloudPlatform):
         body.update(gcp_settings)
         return body
 
-    def backend_to_dict(self, group_self_url):
-        return {
-            'group': group_self_url
-        }
-
     def get_self_url(self):
         return 'global/backendServices/{0}'.format(self.name)
 
@@ -99,7 +94,7 @@ class BackendService(GoogleCloudPlatform):
             body=body).execute()
 
     def add_backend(self, current_backends, group_self_url):
-        new_backend = self.backend_to_dict(group_self_url)
+        new_backend = {'group': group_self_url}
         backends = current_backends + [new_backend]
         return self.set_backends(backends)
 
