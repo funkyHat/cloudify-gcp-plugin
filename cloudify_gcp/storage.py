@@ -15,10 +15,10 @@
 from googleapiclient.http import MediaFileUpload
 from googleapiclient.http import HttpError
 
+from . import constants
 from .gcp import check_response
 from .gcp import GoogleCloudPlatform
 from .gcp import GCPError
-from .compute import constants
 
 
 class Object(GoogleCloudPlatform):
