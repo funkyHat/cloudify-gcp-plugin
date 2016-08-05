@@ -68,10 +68,20 @@ class GoogleCloudPlatform(object):
         self.scope = scope
         self.name = name
         self.logger = logger.getChild('GCP')
-        self.discovery = self.create_discovery(
-                discovery, self.scope, api_version)
+        self.__discovery = discovery
         self.api_version = api_version
         self.body = {}
+
+    @property
+    def discovery(self):
+        """
+        Lazily load the discovery so we don't make API calls during __init__
+        """
+        if hasattr(self, '_discovery'):
+            return self._discovery
+        self._discovery = self.create_discovery(
+                self.__discovery, self.scope, self.api_version)
+        return self._discovery
 
     def create_discovery(self, discovery, scope, api_version):
         """
