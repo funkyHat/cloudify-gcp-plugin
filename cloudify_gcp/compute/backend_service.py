@@ -145,20 +145,22 @@ def delete(**kwargs):
 @operation
 @utils.throw_cloudify_exceptions
 def add_backend(backend_service_name, group_self_url, **kwargs):
-    __modify_backends(backend_service_name,
-                      group_self_url,
-                      BackendService.add_backend)
+    _modify_backends(
+            backend_service_name,
+            group_self_url,
+            BackendService.add_backend)
 
 
 @operation
 @utils.throw_cloudify_exceptions
 def remove_backend(backend_service_name, group_self_url, **kwargs):
-    __modify_backends(backend_service_name,
-                      group_self_url,
-                      BackendService.remove_backend)
+    _modify_backends(
+            backend_service_name,
+            group_self_url,
+            BackendService.remove_backend)
 
 
-def __modify_backends(backend_service_name, group_self_url, modify_function):
+def _modify_backends(backend_service_name, group_self_url, modify_function):
     gcp_config = utils.get_gcp_config()
     backend_service = BackendService(gcp_config,
                                      ctx.logger,
