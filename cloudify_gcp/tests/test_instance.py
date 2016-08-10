@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 ########
 # Copyright (c) 2016 GigaSpaces Technologies Ltd. All rights reserved
 #
@@ -19,11 +21,7 @@ from mock import patch, Mock
 
 from cloudify.state import current_ctx
 
-from cloudify_gcp.compute.instance import (
-        create,
-        start,
-        delete,
-        )
+from cloudify_gcp.compute import instance
 
 
 @patch('cloudify_gcp.utils.get_gcp_resource_name', return_value='valid_name')
@@ -60,7 +58,7 @@ class TestGCPInstance(unittest.TestCase):
         current_ctx.set(ctx)
 
     def test_create(self, mock_build, *args):
-        create(
+        instance.create(
                 'instance_type',
                 'image_id',
                 'name',
@@ -101,12 +99,117 @@ class TestGCPInstance(unittest.TestCase):
                  'gcp_name': 'valid_name',
                  })
 
+    @patch('cloudify_gcp.utils.get_item_from_gcp_response',
+           return_value={'networkInterfaces': [{'networkIP': 'a'}]})
+    def test_start(self, mock_getitem, mock_build, *args):
+        instance.start('name')
+
+        self.assertEqual(
+                self.ctxmock.instance.runtime_properties['ip'],
+                'a')
+
     def test_delete(self, mock_build, *args):
         self.ctxmock.instance.runtime_properties['gcp_name'] = 'delete_name'
-        delete()
+        instance.delete()
 
         mock_build.assert_called_once()
         mock_build().instances().delete.assert_called_with(
                 instance='valid_name',
                 project='not really a project',
                 zone='a very fake zone')
+
+    def test_add_external_ip(self, mock_build, *args):
+        self.ctxmock.target.node.properties = {
+                'use_external_resource': False,
+                }
+
+        instance.add_external_ip('instance_name')
+
+        mock_build().instances().addAccessConfig.assert_called_once_with(
+                body={
+                    'kind': 'compute#accessConfig',
+                    'type': 'ONE_TO_ONE_NAT',
+                    'name': 'External NAT'},
+                instance='valid_name',
+                networkInterface='nic0',
+                project='not really a project',
+                zone='a very fake zone')
+
+    def test_add_external_external_ip(self, mock_build, *args):
+        self.ctxmock.target.node.properties = {
+                'use_external_resource': True,
+                }
+        self.ctxmock.target.instance.runtime_properties = {
+                'gcp_ip': "1.2.3.4",
+                }
+
+        instance.add_external_ip('instance_name')
+
+        mock_build().instances().addAccessConfig.assert_called_once_with(
+                body={
+                    'natIP': '1.2.3.4',
+                    'kind': 'compute#accessConfig',
+                    'type': 'ONE_TO_ONE_NAT',
+                    'name': 'External NAT'},
+                instance='valid_name',
+                networkInterface='nic0',
+                project='not really a project',
+                zone='a very fake zone')
+
+    def test_remove_external_ip(self, mock_build, *args):
+        instance.remove_external_ip('instance_name')
+
+        mock_build().instances().deleteAccessConfig.assert_called_once_with(
+                accessConfig='External NAT',
+                instance='valid_name',
+                networkInterface='nic0',
+                project='not really a project',
+                zone='a very fake zone',
+                )
+
+    def test_attach_disk(self, mock_build, *args):
+        instance.attach_disk('instance', 'disk')
+
+        mock_build().instances().attachDisk.assert_called_once_with(
+                body='disk',
+                instance='valid_name',
+                project='not really a project',
+                zone='a very fake zone'
+                )
+
+    def test_detach_disk(self, mock_build, *args):
+        instance.detach_disk('instance', 'disk')
+
+        mock_build().instances().detachDisk.assert_called_once_with(
+                deviceName='disk',
+                instance='valid_name',
+                project='not really a project',
+                zone='a very fake zone',
+                )
+
+    def test_add_ssh_key(self, mock_build, *args):
+        self.ctxmock.target.instance.runtime_properties = {
+                'gcp_public_key': 'ssh-rsa blahblabhalblah',
+                'user': 'test_user',
+                }
+        self.ctxmock.source.instance.runtime_properties = {}
+
+        instance.add_ssh_key()
+
+        self.assertEqual(
+                self.ctxmock.source.instance.runtime_properties['ssh_keys'],
+                ['test_user:ssh-rsa blahblabhalblah test_user'])
+
+    def test_add_instance_tag(self, mock_build, *args):
+        mock_build().instances().get().execute.return_value = {
+                'tags': {
+                    'items': ['a', 'b', 'c'],
+                    'fingerprint': u'🖐'}}
+
+        instance.add_instance_tag('instance', ['a tag'])
+
+        # Something weird happens so we can't be sure of the order of tags
+        self.assertEqual(
+            set(['a', 'b', 'c', 'valid_name']),
+            set(mock_build().instances().setTags.call_args[1]['body']['items'])
+            )
