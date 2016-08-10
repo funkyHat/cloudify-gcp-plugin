@@ -14,6 +14,7 @@
 #    * limitations under the License.
 
 import re
+import string
 import time
 from copy import deepcopy
 from functools import wraps
@@ -27,6 +28,14 @@ from . import constants
 from cloudify_gcp.gcp import GCPError, GoogleCloudPlatform
 from cloudify_gcp.gcp import check_response
 from cloudify_gcp.gcp import is_missing_resource_error, is_resource_used_error
+
+
+def camel_farm(identifier):
+    """
+    Convert from underscored to camelCase.
+    """
+    words = identifier.split('_')
+    return ''.join([words[0]] + map(string.capitalize, words[1:]))
 
 
 def get_item_from_gcp_response(key_field, key_name, items):
