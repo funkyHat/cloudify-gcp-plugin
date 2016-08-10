@@ -16,6 +16,10 @@
 
 import unittest
 
+from mock import patch, PropertyMock
+
+from cloudify.mocks import MockCloudifyContext
+
 from cloudify_gcp import utils
 
 
@@ -55,3 +59,24 @@ class TestUtils(unittest.TestCase):
         resource_name_too_long2_correct = 'a' * 57 + '-123ab'
         result = utils.get_gcp_resource_name(resource_name_too_long2)
         self.assertEqual(result, resource_name_too_long2_correct)
+
+    def test_camel_farm(self):
+        for i, o in {
+                'i': 'i',
+                'hi_you': 'hiYou',
+                'are_really_very': 'areReallyVery',
+                'nice': 'nice',
+                'proper_longer_example': 'properLongerExample',
+                }.items():
+            self.assertEqual(utils.camel_farm(i), o)
+
+    def test_should_use_external_resource(self):
+        with patch(
+                'cloudify_gcp.utils.ctx',
+                PropertyMock(
+                    return_value=MockCloudifyContext(
+                        properties={
+                            'use_external_resource': True,
+                        }))):
+            # import pdb; pdb.set_trace()
+            self.assertTrue(utils.should_use_external_resource())
