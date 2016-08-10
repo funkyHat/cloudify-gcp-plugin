@@ -12,6 +12,7 @@
 #    * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
+
 from copy import copy
 
 from cloudify import ctx
@@ -24,11 +25,6 @@ from cloudify_gcp.gcp import check_response
 
 
 class BackendService(GoogleCloudPlatform):
-    GCP_TRANSLATION = {
-        'port_name': 'portName',
-        'protocol': 'protocol',
-        'timeout_sec': 'timeoutSec'
-    }
 
     def __init__(self,
                  config,
@@ -51,7 +47,7 @@ class BackendService(GoogleCloudPlatform):
                 self.health_check
             ]
         }
-        gcp_settings = {self.GCP_TRANSLATION[key]: value
+        gcp_settings = {utils.camel_farm(key): value
                         for key, value in self.additional_settings.iteritems()}
         body.update(gcp_settings)
         return body
