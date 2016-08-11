@@ -216,7 +216,7 @@ class TestGCPInstance(unittest.TestCase):
         mock_build().instances().setTags.assert_called_once_with(
             body={
                 'items': ['a', 'b', 'c', 'valid_name'],
-                'fingerprint': u'\U0001f590'},
+                'fingerprint': u'🖐'},
             project='not really a project',
             instance='valid_name',
             zone='a very fake zone'
