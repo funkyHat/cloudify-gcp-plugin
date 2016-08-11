@@ -19,6 +19,7 @@ import unittest
 
 from mock import patch, Mock
 
+from cloudify.exceptions import NonRecoverableError
 from cloudify.state import current_ctx
 
 from cloudify_gcp.compute import instance
@@ -158,6 +159,15 @@ class TestGCPInstance(unittest.TestCase):
                 networkInterface='nic0',
                 project='not really a project',
                 zone='a very fake zone')
+
+    def test_add_external_external_ip_raises(self, mock_build, *args):
+        self.ctxmock.target.node.properties = {
+                'use_external_resource': True,
+                }
+        self.ctxmock.target.instance.runtime_properties = {}
+
+        with self.assertRaises(NonRecoverableError):
+            instance.add_external_ip('instance_name')
 
     def test_remove_external_ip(self, mock_build, *args):
         instance.remove_external_ip('instance_name')
