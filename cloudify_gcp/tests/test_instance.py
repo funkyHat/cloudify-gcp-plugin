@@ -70,11 +70,14 @@ class TestGCPInstance(unittest.TestCase):
                 )
 
         mock_build.assert_called_once()
+
+        mock_build().instances().insert.call_args[1][
+                'body']['tags']['items'].sort()
         mock_build().instances().insert.assert_called_with(
                 body={
                     'machineType': 'zones/zone/machineTypes/instance_type',
                     'name': 'valid_name',
-                    'tags': {'items': ['valid_name', 'tags']},
+                    'tags': {'items': ['tags', 'valid_name']},
                     'description': 'Cloudify generated instance',
                     'disks': [{
                         'initializeParams': {'sourceImage': 'image_id'},
@@ -209,7 +212,12 @@ class TestGCPInstance(unittest.TestCase):
         instance.add_instance_tag('instance', ['a tag'])
 
         # Something weird happens so we can't be sure of the order of tags
-        self.assertEqual(
-            set(['a', 'b', 'c', 'valid_name']),
-            set(mock_build().instances().setTags.call_args[1]['body']['items'])
+        mock_build().instances().setTags.call_args[1]['body']['items'].sort()
+        mock_build().instances().setTags.assert_called_once_with(
+            body={
+                'items': ['a', 'b', 'c', 'valid_name'],
+                'fingerprint': u'\U0001f590'},
+            project='not really a project',
+            instance='valid_name',
+            zone='a very fake zone'
             )
