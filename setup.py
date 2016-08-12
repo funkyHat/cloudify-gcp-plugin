@@ -34,13 +34,7 @@ setup(
         "oauth2client==3",
         "google-api-python-client==1.5.1",
         "cloudify-plugins-common>=3.3.1",
-        "cloudify-dsl-parser>=3.3.1",
-        "cloudify-rest-client>=3.3.1",
         "pyyaml",
         "pycrypto",
     ],
-    test_requires=[
-        "cloudify-dsl-parser>=3.3.1",
-        "nose"
-    ]
 )
