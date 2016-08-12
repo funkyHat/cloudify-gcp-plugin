@@ -16,9 +16,11 @@
 
 import unittest
 
-from mock import patch, PropertyMock
+from mock import Mock, patch, PropertyMock
 
+from cloudify.exceptions import NonRecoverableError
 from cloudify.mocks import MockCloudifyContext
+from cloudify.state import current_ctx
 
 from cloudify_gcp import utils
 
@@ -80,3 +82,31 @@ class TestUtils(unittest.TestCase):
                         }))):
             # import pdb; pdb.set_trace()
             self.assertTrue(utils.should_use_external_resource())
+
+
+class TestUtilsWithCTX(unittest.TestCase):
+
+    def setUp(self):
+        ctx = self.ctxmock = Mock()
+        ctx.node.properties = {}
+
+        current_ctx.set(ctx)
+
+    def test_assure_resource_id_correct(self):
+        self.ctxmock.node.properties['resource_id'] = 'valid'
+
+        utils.assure_resource_id_correct()
+
+    def test_assure_resource_id_correct_raises_no_id(self):
+        with self.assertRaises(NonRecoverableError) as e:
+            utils.assure_resource_id_correct()
+
+        self.assertIn('missing', e.exception.message)
+
+    def test_assure_resource_id_correct_raises_invalid(self):
+        self.ctxmock.node.properties['resource_id'] = '!nv4l!|>'
+
+        with self.assertRaises(NonRecoverableError) as e:
+            utils.assure_resource_id_correct()
+
+        self.assertIn('cannot be used', e.exception.message)
