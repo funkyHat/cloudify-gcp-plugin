@@ -17,7 +17,7 @@ from cloudify.decorators import operation
 
 from cloudify_gcp.gcp import GoogleCloudPlatform
 from cloudify_gcp.gcp import check_response
-from cloudify_gcp.compute import constants
+from .. import constants
 from .. import utils
 from cloudify_gcp.storage import Object
 
