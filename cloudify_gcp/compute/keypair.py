@@ -69,7 +69,7 @@ class KeyPair(GoogleCloudPlatform):
         self.logger.info(
             'Save private key to {0}'.format(self.private_key_path))
         with open(self.private_key_path, 'w') as content_file:
-            os.chmod(self.private_key_path, 0600)
+            os.chmod(self.private_key_path, 0o600)
             content_file.write(self.private_key)
 
     @check_response
