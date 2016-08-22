@@ -60,19 +60,19 @@ class TargetProxy(GoogleCloudPlatform):
 
     @abstractmethod
     def get_self_url(self):
-        pass
+        """Return URL component for the proxy"""
 
     @abstractmethod
     def gcp_get_dict(self):
-        pass
+        """Generate the resource representation for the proxy"""
 
     @abstractmethod
     def to_dict(self):
-        pass
+        """Generate the resource representation for the proxy"""
 
     @abstractmethod
     def _gcp_target_proxies(self):
-        pass
+        """Get the correct endpoind wrapper for the proxy type"""
 
 
 class TargetHttpProxy(TargetProxy):
