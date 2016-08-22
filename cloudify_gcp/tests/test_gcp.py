@@ -20,17 +20,8 @@ from mock import MagicMock, patch
 
 from googleapiclient.errors import HttpError
 
+from cloudify_gcp.tests.test_utils import NS
 from cloudify_gcp import gcp
-
-
-class NS(object):
-    """Simple namespace helper"""
-
-    reason = 'No reason needed for these tests'
-
-    def __init__(self, **kwargs):
-        for k, v in kwargs.items():
-            setattr(self, k, v)
 
 
 class TestGCP(unittest.TestCase):

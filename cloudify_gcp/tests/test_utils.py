@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 ########
 # Copyright (c) 2014 GigaSpaces Technologies Ltd. All rights reserved
 #
@@ -13,8 +15,8 @@
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 
-
 import unittest
+from functools import partial
 
 from mock import Mock, patch, PropertyMock
 
@@ -23,6 +25,20 @@ from cloudify.mocks import MockCloudifyContext
 from cloudify.state import current_ctx
 
 from cloudify_gcp import utils
+
+
+class NS(object):
+    """Simple namespace helper"""
+
+    reason = 'No reason needed for these tests'
+
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+
+def raiser(code):
+    raise utils.HttpError(NS(status=code), '')
 
 
 class TestUtils(unittest.TestCase):
@@ -42,25 +58,14 @@ class TestUtils(unittest.TestCase):
         self.assertIsNone(found_item)
 
     def test_get_resource_name(self):
-        resource_name = 'test_resource_name1'
-        resource_name_correct = 'test-resource-name1'
-        result = utils.get_gcp_resource_name(resource_name)
-        self.assertEqual(result, resource_name_correct)
-
-        resource_name_too_long = 'a' * 70
-        resource_name_too_long_correct = 'a' * 63
-        result = utils.get_gcp_resource_name(resource_name_too_long)
-        self.assertEqual(result, resource_name_too_long_correct)
-
-        resource_name_nonalpha = 'test_345%$*^&()+_sd^*()'
-        resource_name_nonalpha_correct = 'test-345-sd'
-        result = utils.get_gcp_resource_name(resource_name_nonalpha)
-        self.assertEqual(result, resource_name_nonalpha_correct)
-
-        resource_name_too_long2 = 'a' * 70 + '_123ab'
-        resource_name_too_long2_correct = 'a' * 57 + '-123ab'
-        result = utils.get_gcp_resource_name(resource_name_too_long2)
-        self.assertEqual(result, resource_name_too_long2_correct)
+        for input, output in [
+                ('test_resource_name1', 'test-resource-name1'),  # underscores
+                ('a' * 70, 'a' * 63),  # too long
+                ('test_345%$*^&()+_sd^*()', 'test-345-sd'),  # invalid chars
+                ('a' * 70 + '_123ab', 'a' * 57 + '-123ab'),  # also too long
+                ('3', 'a3'),  # must start with alpha
+                ]:
+            self.assertEqual(output, utils.get_gcp_resource_name(input))
 
     def test_camel_farm(self):
         for i, o in {
@@ -83,7 +88,18 @@ class TestUtils(unittest.TestCase):
             # import pdb; pdb.set_trace()
             self.assertTrue(utils.should_use_external_resource())
 
+    def test_is_object_deleted(self):
+        obj = Mock()
 
+        # Non-exception means the object was collected succesfully
+        self.assertFalse(utils.is_object_deleted(obj))
+
+        obj.get.side_effect = partial(raiser, 404)
+
+        self.assertTrue(utils.is_object_deleted(obj))
+
+
+@patch('cloudify_gcp.gcp.ServiceAccountCredentials.from_json_keyfile_dict')
 class TestUtilsWithCTX(unittest.TestCase):
 
     def setUp(self):
@@ -92,21 +108,69 @@ class TestUtilsWithCTX(unittest.TestCase):
 
         current_ctx.set(ctx)
 
-    def test_assure_resource_id_correct(self):
+    @patch('cloudify_gcp.utils.assure_resource_id_correct')
+    def test_get_final_resource_name(self, mock_assure_correct, *args):
+        self.ctxmock.node.properties['use_external_resource'] = True
+
+        out = utils.get_final_resource_name('name')
+
+        mock_assure_correct.assert_called_once_with()
+        self.assertIs(out, mock_assure_correct())
+
+    def test_assure_resource_id_correct(self, *args):
         self.ctxmock.node.properties['resource_id'] = 'valid'
 
         utils.assure_resource_id_correct()
 
-    def test_assure_resource_id_correct_raises_no_id(self):
+    def test_assure_resource_id_correct_raises_no_id(self, *args):
         with self.assertRaises(NonRecoverableError) as e:
             utils.assure_resource_id_correct()
 
         self.assertIn('missing', e.exception.message)
 
-    def test_assure_resource_id_correct_raises_invalid(self):
+    def test_assure_resource_id_correct_raises_invalid(self, *args):
         self.ctxmock.node.properties['resource_id'] = '!nv4l!|>'
 
         with self.assertRaises(NonRecoverableError) as e:
             utils.assure_resource_id_correct()
 
         self.assertIn('cannot be used', e.exception.message)
+
+    def test_create_resource_external(self, *args):
+        self.ctxmock.node.properties['use_external_resource'] = True
+
+        resource = Mock()
+        resource.get.side_effect = partial(raiser, 404)
+
+        with self.assertRaises(NonRecoverableError):
+            utils.create(resource)
+
+        resource.get.side_effect = partial(raiser, 403)
+
+        with self.assertRaises(utils.HttpError):
+            utils.create(resource)
+
+    def test_retry_on_failure_raises(self, *args):
+
+        @utils.retry_on_failure('a message')
+        def raise_http(code):
+            raiser(code)
+
+        raise_http(400)
+
+        self.ctxmock.operation.retry.assert_called_once_with('a message', 30)
+
+        with self.assertRaises(utils.HttpError):
+            raise_http(404)
+
+    def test_get_agent_ssh_key_string(self, *args):
+        self.ctxmock.provider_context = {}
+
+        self.assertEqual('', utils.get_agent_ssh_key_string())
+
+        self.ctxmock.provider_context['resources'] = {
+                'cloudify_agent': {
+                    'public_key': '🗝',
+                    }}
+
+        self.assertEqual('🗝', utils.get_agent_ssh_key_string())

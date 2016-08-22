@@ -98,7 +98,13 @@ class TestGCPFirewall(unittest.TestCase):
 
     def test_create_security_group(self, mock_build, *args):
         firewall.create_security_group(
-                {},
+                [
+                    {
+                        'cidr_ip': 'abcdefg',
+                        'source_tags': ['s_tag_1', 's_tag_2'],
+                        'target_tags': ['t_tag_1', 't_tag_2'],
+                        },
+                    ],
                 'name',
                 )
 
@@ -106,13 +112,12 @@ class TestGCPFirewall(unittest.TestCase):
         mock_build().firewalls().insert.assert_called_with(
                 body={
                     'network': 'global/networks/not a real network',
-                    'sourceTags': [],
-                    'sourceRanges': [],
-                    'targetTags': [],
-                    'allowed': [],
-                    'name': 'valid_name'
-                    },
-                project='not really a project',
+                    'sourceTags': ['valid_name'],
+                    'sourceRanges': ['abcdefg'],
+                    'targetTags': ['valid_name'],
+                    'allowed': [{'IPProtocol': None, 'ports': [[]]}],
+                    'name': 'valid_name'},
+                project='not really a project'
                 )
 
     def test_delete_security_group(self, mock_build, *args):
