@@ -16,6 +16,7 @@
 import re
 import string
 import time
+from abc import ABCMeta, abstractmethod
 from copy import deepcopy
 from functools import wraps
 
@@ -301,7 +302,9 @@ def response_to_operation(response, config, logger):
         return GlobalOperation(config, logger, operation_name)
 
 
-class GlobalOperation(GoogleCloudPlatform):
+class Operation(GoogleCloudPlatform):
+    __metaclass__ = ABCMeta
+
     def __init__(self, config, logger, name):
         super(GlobalOperation, self).__init__(config, logger, name)
         self.last_response = None
@@ -319,13 +322,18 @@ class GlobalOperation(GoogleCloudPlatform):
         self.last_status = self.last_response['status']
         return self.last_response
 
+    @abstractmethod
+    def _get(self): pass
+
+
+class GlobalOperation(Operation):
     def _get(self):
         return self.discovery.globalOperations().get(
             project=self.project,
             operation=self.name).execute()
 
 
-class ZoneOperation(GlobalOperation):
+class ZoneOperation(Operation):
     def _get(self):
         return self.discovery.zoneOperations().get(
             project=self.project,
