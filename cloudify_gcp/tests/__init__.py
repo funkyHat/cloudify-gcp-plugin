@@ -12,3 +12,39 @@
 #    * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
+
+import unittest
+
+from mock import Mock
+
+from cloudify.state import current_ctx
+
+
+class TestGCP(unittest.TestCase):
+
+    def setUp(self):
+        ctx = self.ctxmock = Mock()
+        ctx.node.name = 'name'
+        ctx.node.id = 'id'
+        ctx.node.properties = {
+            'gcp_config': {
+                'auth': {
+                    'type': 'service_account',
+                    'client_email': 'nobody@invalid',
+                    'private_key_id': "This isn't even an ID!",
+                    'private_key': 'nope!'
+                    },
+                'zone': 'a very fake zone',
+                'network': 'not a real network',
+                'project': 'not really a project',
+                },
+            }
+        ctx.instance.runtime_properties = {}
+        ctx.provider_context = {
+            'resources': {
+                'cloudify_agent': {
+                    'public_key': 'Fakey McFakeface',
+                    },
+                },
+            }
+        current_ctx.set(ctx)

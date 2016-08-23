@@ -17,46 +17,19 @@
 
 import unittest
 
-from mock import patch, Mock, MagicMock
+from mock import patch, MagicMock
 
 from cloudify.exceptions import NonRecoverableError
-from cloudify.state import current_ctx
 
 from cloudify_gcp.compute import target_proxy
+from . import TestGCP
 
 
 @patch('cloudify_gcp.utils.assure_resource_id_correct', return_value=True)
 @patch('cloudify_gcp.gcp.ServiceAccountCredentials.from_json_keyfile_dict')
 @patch('cloudify_gcp.utils.get_gcp_resource_name', return_value='valid_name')
 @patch('cloudify_gcp.gcp.build')
-class TestTargetProxy(unittest.TestCase):
-
-    def setUp(self):
-        ctx = self.ctxmock = Mock()
-        ctx.node.name = 'name'
-        ctx.node.id = 'id'
-        ctx.node.properties = {
-            'gcp_config': {
-                'auth': {
-                    'type': 'service_account',
-                    'client_email': 'nobody@invalid',
-                    'private_key_id': "This isn't even an ID!",
-                    'private_key': 'nope!'
-                    },
-                'zone': 'a very fake zone',
-                'network': 'not a real network',
-                'project': 'not really a project',
-                },
-            }
-        ctx.instance.runtime_properties = {}
-        ctx.provider_context = {
-            'resources': {
-                'cloudify_agent': {
-                    'public_key': 'Fakey McFakeface',
-                    },
-                },
-            }
-        current_ctx.set(ctx)
+class TestTargetProxy(TestGCP):
 
     def test_create_http(self, mock_build, *args):
         target_proxy.create(
