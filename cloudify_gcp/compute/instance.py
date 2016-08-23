@@ -376,27 +376,25 @@ def delete(**kwargs):
 @operation
 @utils.throw_cloudify_exceptions
 def add_instance_tag(instance_name, tag, **kwargs):
-    if not tag:
-        return
-    gcp_config = utils.get_gcp_config()
-    gcp_config['network'] = utils.get_gcp_resource_name(gcp_config['network'])
-    instance = Instance(gcp_config,
-                        ctx.logger,
-                        name=instance_name)
-    instance.set_tags([utils.get_gcp_resource_name(t) for t in tag])
+    if tag:
+        config = utils.get_gcp_config()
+        config['network'] = utils.get_gcp_resource_name(config['network'])
+        instance = Instance(config,
+                            ctx.logger,
+                            name=instance_name)
+        instance.set_tags([utils.get_gcp_resource_name(t) for t in tag])
 
 
 @operation
 @utils.throw_cloudify_exceptions
 def remove_instance_tag(instance_name, tag, **kwargs):
-    gcp_config = utils.get_gcp_config()
-    if not instance_name:
-        return
-    gcp_config['network'] = utils.get_gcp_resource_name(gcp_config['network'])
-    instance = Instance(gcp_config,
-                        ctx.logger,
-                        name=instance_name)
-    instance.remove_tags([utils.get_gcp_resource_name(t) for t in tag])
+    config = utils.get_gcp_config()
+    if instance_name:
+        config['network'] = utils.get_gcp_resource_name(config['network'])
+        instance = Instance(config,
+                            ctx.logger,
+                            name=instance_name)
+        instance.remove_tags([utils.get_gcp_resource_name(t) for t in tag])
 
 
 @operation
@@ -440,14 +438,14 @@ def add_ssh_key(**kwargs):
 @operation
 @utils.throw_cloudify_exceptions
 def remove_external_ip(instance_name, **kwargs):
-    if not instance_name:
-        return
-    gcp_config = utils.get_gcp_config()
-    gcp_config['network'] = utils.get_gcp_resource_name(gcp_config['network'])
-    instance = Instance(gcp_config,
-                        ctx.logger,
-                        name=instance_name)
-    instance.delete_access_config()
+    if instance_name:
+        gcp_config = utils.get_gcp_config()
+        gcp_config['network'] = utils.get_gcp_resource_name(
+                gcp_config['network'])
+        instance = Instance(gcp_config,
+                            ctx.logger,
+                            name=instance_name)
+        instance.delete_access_config()
 
 
 @operation

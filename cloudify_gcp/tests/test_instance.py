@@ -30,13 +30,17 @@ from . import TestGCP
 class TestGCPInstance(TestGCP):
 
     def test_create(self, mock_build, *args):
+        self.ctxmock.instance.runtime_properties = {
+                'startup_script': {'type': 'string'},
+                }
+
         instance.create(
                 'instance_type',
                 'image_id',
                 'name',
                 'zone',
                 external_ip=False,
-                startup_script={'type': 'string'},
+                startup_script=None,
                 scopes='scopes',
                 tags=['tags'],
                 )
@@ -69,10 +73,52 @@ class TestGCPInstance(TestGCP):
                 )
 
         self.assertEqual(
-                self.ctxmock.instance.runtime_properties,
-                {'gcp_zone': 'zone',
-                 'gcp_name': 'valid_name',
-                 })
+                {
+                    'gcp_zone': 'zone',
+                    'gcp_name': 'valid_name',
+                    'startup_script': {'type': 'string'},
+                 },
+                self.ctxmock.instance.runtime_properties
+                )
+
+    def test_create_with_disk(self, mock_build, *args):
+        self.ctxmock.instance.runtime_properties = {
+                'gcp_disk': '💾',
+                }
+
+        instance.create(
+                'instance_type',
+                'image_id',
+                'name',
+                'zone',
+                external_ip=False,
+                startup_script=None,
+                scopes='scopes',
+                tags=['tags'],
+                )
+
+        mock_build().instances().insert.call_args[1][
+                'body']['tags']['items'].sort()
+        mock_build().instances().insert.assert_called_with(
+                body={
+                    'machineType': 'zones/zone/machineTypes/instance_type',
+                    'name': 'valid_name',
+                    'tags': {'items': ['tags', 'valid_name']},
+                    'description': 'Cloudify generated instance',
+                    'disks': ['💾'],
+                    'serviceAccounts': [{
+                        'scopes': 'scopes',
+                        'email': 'default'}],
+                    'metadata': {
+                        'items': [
+                            {'value': 'not really a project', 'key': 'bucket'},
+                            {'value': 'Fakey McFakeface', 'key': 'sshKeys'}]},
+                    'networkInterfaces': [{
+                        'network': 'global/networks/valid_name'}]
+                    },
+                project='not really a project',
+                zone='zone'
+                )
 
     @patch('cloudify_gcp.utils.get_item_from_gcp_response',
            return_value={'networkInterfaces': [{'networkIP': 'a'}]})
@@ -92,6 +138,23 @@ class TestGCPInstance(TestGCP):
                 instance='valid_name',
                 project='not really a project',
                 zone='a very fake zone')
+
+    @patch('cloudify_gcp.utils.is_object_deleted', return_value=True)
+    def test_delete_deleted(self, mock_is_deleted, mock_build, *args):
+        self.ctxmock.instance.runtime_properties = {
+                'gcp_disk': 'hi',
+                'gcp_name': 'hello',
+                'gcp_zone': 'hey',
+                'another': 'yo',
+                }
+
+        instance.delete()
+
+        self.assertFalse(mock_build().instances().delete.called)
+
+        self.assertEqual(
+                {'another': 'yo'},
+                self.ctxmock.instance.runtime_properties)
 
     def test_add_external_ip(self, mock_build, *args):
         self.ctxmock.target.node.properties = {
@@ -221,3 +284,15 @@ class TestGCPInstance(TestGCP):
             instance='instance',
             zone='a very fake zone'
             )
+
+    def test_contained_in(self, *args):
+        self.ctxmock.source.instance.runtime_properties = {}
+        self.ctxmock.target.instance.runtime_properties = {
+                'ssh_keys': '🗝🔑🗝',
+                }
+
+        instance.contained_in()
+
+        self.assertEqual(
+                '🗝🔑🗝',
+                self.ctxmock.source.instance.runtime_properties['ssh_keys'])
