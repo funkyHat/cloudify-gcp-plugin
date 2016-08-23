@@ -95,7 +95,7 @@ class BackendService(GoogleCloudPlatform):
         return self.set_backends(backends)
 
     def remove_backend(self, current_backends, group_self_url):
-        backends = filter(lambda backend: backend['group'] == group_self_url,
+        backends = filter(lambda backend: backend['group'] != group_self_url,
                           current_backends)
         return self.set_backends(backends)
 
