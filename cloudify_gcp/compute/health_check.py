@@ -78,11 +78,11 @@ class HealthCheck(GoogleCloudPlatform):
 
     @abstractmethod
     def get_self_url(self):
-        pass
+        """Return URL endpoint for the health check type"""
 
     @abstractmethod
     def _gcp_health_checks(self):
-        pass
+        """return discovery object for the health check type"""
 
 
 class HttpHealthCheck(HealthCheck):
