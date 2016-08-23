@@ -23,9 +23,9 @@ from cloudify_gcp.compute import instance
 from . import TestGCP
 
 
-@patch('cloudify_gcp.utils.get_gcp_resource_name', return_value='valid_name')
 @patch('cloudify_gcp.utils.assure_resource_id_correct', return_value=True)
 @patch('cloudify_gcp.gcp.ServiceAccountCredentials.from_json_keyfile_dict')
+@patch('cloudify_gcp.utils.get_gcp_resource_name', return_value='valid_name')
 @patch('cloudify_gcp.gcp.build')
 class TestGCPInstance(TestGCP):
 
@@ -200,5 +200,24 @@ class TestGCPInstance(TestGCP):
                 'fingerprint': u'🖐'},
             project='not really a project',
             instance='valid_name',
+            zone='a very fake zone'
+            )
+
+    def test_remove_instance_tag(self, mock_build, mock_get_res, *args):
+        mock_build().instances().get().execute.return_value = {
+                'tags': {
+                    'items': ['a tag', 'another tag'],
+                    'fingerprint': u'🖐'}}
+
+        mock_get_res.side_effect = lambda x: x
+
+        instance.remove_instance_tag('instance', ['a tag'])
+
+        mock_build().instances().setTags.assert_called_once_with(
+            body={
+                'items': ['another tag'],
+                'fingerprint': u'🖐'},
+            project='not really a project',
+            instance='instance',
             zone='a very fake zone'
             )

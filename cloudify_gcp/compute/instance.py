@@ -137,9 +137,11 @@ class Instance(GoogleCloudPlatform):
             'Remove tags {0} from instance {1}'.format(
                 str(self.tags),
                 self.name))
+        tag_dict = self.get()['tags']
+        self.tags = tag_dict.get('items', [])
 
         self.tags = [tag for tag in self.tags if tag not in tags]
-        fingerprint = self.get()['tags']['fingerprint']
+        fingerprint = tag_dict['fingerprint']
         return self.discovery.instances().setTags(
             project=self.project,
             zone=self.zone,
