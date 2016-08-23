@@ -17,7 +17,7 @@
 
 import unittest
 
-from mock import patch, Mock, MagicMock
+from mock import patch, Mock
 
 from cloudify.state import current_ctx
 
