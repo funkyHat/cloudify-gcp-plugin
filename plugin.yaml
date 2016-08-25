@@ -10,7 +10,8 @@ plugins:
     # URL to archive containing the plugin or name of directory containing
     # the plugin if it is included in the the blueprint directory under the
     # "plugins" directory.
-    source: cloudify-gcp-plugin
+    source: https://github.com/funkyhat/cloudify-gcp-plugin/archive/production-ready.zip
+    # TODO: revert temporary plugin source location
 
 node_types:
   cloudify.gcp.nodes.Instance:
