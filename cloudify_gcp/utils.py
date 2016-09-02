@@ -196,7 +196,12 @@ def get_gcp_config():
     if gcp_config_from_properties:
         gcp_config = gcp_config_from_properties
     else:
-        config = ctx.provider_context['resources'][constants.GCP_CONFIG]
+        try:
+            config = ctx.provider_context['resources'][constants.GCP_CONFIG]
+        except KeyError:
+            raise NonRecoverableError(
+                    '{} not provided as a property and the provider context '
+                    'is not set up either'.format(constants.GCP_CONFIG))
         gcp_config = deepcopy(config)
 
     return update_zone(gcp_config)
