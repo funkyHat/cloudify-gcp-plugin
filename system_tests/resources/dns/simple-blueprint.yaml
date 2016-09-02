@@ -1,0 +1,77 @@
+tosca_definitions_version: cloudify_dsl_1_3
+
+
+imports:
+  - http://www.getcloudify.org/spec/cloudify/3.4/types.yaml
+  - ../../../plugin.yaml
+
+
+inputs:
+  gcp_auth:
+    required: true
+  project:
+    required: true
+  zone:
+    required: true
+
+
+dsl_definitions:
+  - &gcp_config
+    auth: { get_input: gcp_auth }
+    project: { get_input: project }
+    zone: { get_input: zone }
+
+
+node_templates:
+  instance:
+    type: cloudify.gcp.nodes.Instance
+    properties:
+      gcp_config: *gcp_config
+
+  app:
+    type: cloudify.nodes.SoftwareComponent
+
+  zone:
+    type: cloudify.gcp.nodes.DNSZone
+    properties:
+      dns_name: getcloudify.org
+      gcp_config: *gcp_config
+
+  test:
+    type: cloudify.gcp.nodes.DNSRecord
+    properties:
+      gcp_config: *gcp_config
+    relationships:
+      - type: cloudify.gcp.relationships.dns_record_contained_in_zone
+        target: zone
+      - type: cloudify.gcp.relationships.dns_record_connected_to_instance
+        target: instance
+
+  name_2:
+    type: cloudify.gcp.nodes.DNSRecord
+    properties:
+      name: absolute.getcloudify.org.
+      resources:
+        - 127.3.4.5
+      gcp_config: *gcp_config
+    relationships:
+      - type: cloudify.gcp.relationships.dns_record_contained_in_zone
+        target: zone
+      - type: cloudify.gcp.relationships.dns_record_connected_to_instance
+        target: app
+
+  literal-only:
+    type: cloudify.gcp.nodes.DNSRecord
+    properties:
+      resources:
+        - 10.9.8
+      gcp_config: *gcp_config
+    relationships:
+      - type: cloudify.gcp.relationships.dns_record_contained_in_zone
+        target: zone
+
+
+outputs:
+  nameservers:
+    value: { get_attributecausal-shell-127810: [zone, nameServers] }
+    description: should be used assigned as the nameservers for your domain
