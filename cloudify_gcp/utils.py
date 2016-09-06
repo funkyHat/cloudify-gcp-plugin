@@ -30,9 +30,13 @@ from cloudify.context import CloudifyContext
 from cloudify.exceptions import NonRecoverableError
 
 from . import constants
-from cloudify_gcp.gcp import GCPError, GoogleCloudPlatform
-from cloudify_gcp.gcp import check_response
-from cloudify_gcp.gcp import is_missing_resource_error, is_resource_used_error
+from .gcp import (
+    GCPError,
+    GoogleCloudPlatform,
+    check_response,
+    is_missing_resource_error,
+    is_resource_used_error,
+    )
 
 
 def camel_farm(identifier):
