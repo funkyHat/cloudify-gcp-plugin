@@ -12,15 +12,21 @@
 #    * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
+
 from cloudify import ctx
 from cloudify.decorators import operation
+from cloudify.exceptions import NonRecoverableError
 
-from .. import constants
 from .. import utils
-from cloudify_gcp.compute.keypair import KeyPair
-from cloudify_gcp.gcp import GoogleCloudPlatform
-from cloudify_gcp.gcp import check_response
-from cloudify_gcp.gcp import GCPError
+from .. import constants
+from .keypair import KeyPair
+from .network import Network
+from .subnetwork import SubNetwork
+from ..gcp import (
+        GCPError,
+        check_response,
+        GoogleCloudPlatform,
+        )
 
 
 class Instance(GoogleCloudPlatform):
@@ -41,7 +47,10 @@ class Instance(GoogleCloudPlatform):
                  external_ip=False,
                  tags=None,
                  scopes=None,
-                 ssh_keys=None):
+                 ssh_keys=None,
+                 network=None,
+                 zone=None,
+                 ):
         """
         Create Instance object
 
@@ -61,13 +70,14 @@ class Instance(GoogleCloudPlatform):
             utils.get_gcp_resource_name(name))
         self.image = image
         self.machine_type = machine_type
-        self.network = config['network']
         self.startup_script = startup_script
         self.tags = tags + [self.name] if tags else [self.name]
         self.externalIP = external_ip
         self.disks = []
         self.scopes = scopes or self.DEFAULT_SCOPES
         self.ssh_keys = ssh_keys or []
+        self.zone = zone
+        self.network = network
 
     @check_response
     def create(self):
@@ -300,16 +310,13 @@ class Instance(GoogleCloudPlatform):
 def create(instance_type,
            image_id,
            name,
-           zone,
            external_ip,
            startup_script,
            scopes,
            tags,
+           zone=None,
            **kwargs):
-    if zone:
-        ctx.instance.runtime_properties[constants.GCP_ZONE] = zone
     gcp_config = utils.get_gcp_config()
-    gcp_config['network'] = utils.get_gcp_resource_name(gcp_config['network'])
     script = ''
     if not startup_script:
         startup_script = ctx.instance.runtime_properties.get('startup_script')
@@ -321,6 +328,27 @@ def create(instance_type,
         script = startup_script.get('script')
     ssh_keys = get_ssh_keys()
 
+    network = None
+    network_list = utils.get_relationships(
+            ctx,
+            filter_relationships='cloudify.gcp.relationships.'
+                                 'instance_contained_in_network',
+            )
+    if len(network_list) > 0:
+        network = network_list[0]
+        if network.node.type == 'cloudify.gcp.nodes.Network':
+            network = network.instance.runtime_properties['name']
+        elif network.node.type == 'cloudify.gcp.nodes.SubNetwork':
+            network = network.instance.runtime_properties['network']
+    else:
+        network = utils.get_gcp_resource_name(gcp_config['network'])
+
+    if not zone and isinstance(network, (Network, SubNetwork)):
+        # The zone must be within the network
+        zone = '{}-a'.format(network.runtime_properties['region'])
+    elif not zone:
+        zone = utils.get_gcp_resource_name(gcp_config['zone'])
+
     instance_name = utils.get_final_resource_name(name)
     instance = Instance(gcp_config,
                         ctx.logger,
@@ -331,24 +359,35 @@ def create(instance_type,
                         startup_script=script,
                         scopes=scopes,
                         tags=tags,
-                        ssh_keys=ssh_keys)
+                        ssh_keys=ssh_keys,
+                        network=network,
+                        zone=zone,
+                        )
     ctx.instance.runtime_properties[constants.NAME] = instance.name
+    ctx.instance.runtime_properties['zone'] = instance.zone
+    ctx.instance.runtime_properties['name'] = instance.name
     if not utils.is_manager_instance():
         add_to_security_groups(instance)
     disk = ctx.instance.runtime_properties.get(constants.DISK)
     if disk:
         instance.disks = [disk]
+    if not instance.disks and not instance.image:
+        raise NonRecoverableError("A disk image ID must be provided")
+
     utils.create(instance)
+    ctx.instance.runtime_properties.update(instance.get())
 
 
 @operation
 @utils.throw_cloudify_exceptions
-def start(name,
-          **kwargs):
+def start(**kwargs):
     gcp_config = utils.get_gcp_config()
+    props = ctx.instance.runtime_properties
     instance = Instance(gcp_config,
                         ctx.logger,
-                        name=name)
+                        name=props['name'],
+                        zone=props['zone'],
+                        )
     set_ip(instance)
 
 
@@ -357,15 +396,18 @@ def start(name,
 @utils.throw_cloudify_exceptions
 def delete(**kwargs):
     gcp_config = utils.get_gcp_config()
-    name = ctx.instance.runtime_properties.get(constants.NAME, None)
-    if name:
+    props = ctx.instance.runtime_properties
+    import pdb; pdb.set_trace()
+    if props['name']:
         instance = Instance(gcp_config,
                             ctx.logger,
-                            name=name)
+                            name=props['name'],
+                            zone=props['zone'],
+                            )
         if utils.should_use_external_resource() or \
                 utils.is_object_deleted(instance):
             ctx.instance.runtime_properties.pop(constants.DISK, None)
-            ctx.instance.runtime_properties.pop(constants.NAME, None)
+            ctx.instance.runtime_properties.pop('name', None)
             ctx.instance.runtime_properties.pop(constants.GCP_ZONE, None)
         else:
             utils.delete_if_not_external(instance)
@@ -508,3 +550,22 @@ def get_ssh_keys():
             ctx.provider_context['resources']['cloudify_agent']['public_key']
         instance_keys.append(agent_key)
     return list(set(instance_keys))
+
+
+def validate_contained_in_network(**kwargs):
+    gcp_config = utils.get_gcp_config()
+    instance = Instance(gcp_config,
+                        ctx.logger,
+                        name=instance_name)
+    rels = utils.get_relationships(
+            ctx,
+            filter_relationships='cloudify.gcp.relationships.'
+                                 'instance_contained_in_network',
+            filter_nodes=[
+                'cloudify.gcp.nodes.Network',
+                'cloudify.gcp.nodes.SubNetwork',
+                ],
+            )
+    if len(rels) > 1:
+        raise NonRecoverableError(
+                'Instances may only be contained in 1 Network or SubNetwork')

@@ -199,6 +199,13 @@ node_types:
           If "use_external_resource" is set to true, this field will be used as a name
           of existing network that is referenced by this node.
         default: ''
+      name:
+        default: ''
+      auto_subnets:
+        description: >
+          Whether to use the GCP "autoCreateSubnetworks" feature (see
+          https://cloud.google.com/compute/docs/subnetworks#networks_and_subnetworks)
+        default: true
       gcp_config:
         description: >
           A dictionary of values to pass to authenticate with the Google Cloud Platform API.
@@ -208,10 +215,58 @@ node_types:
         create:
           implementation: gcp_plugin.cloudify_gcp.compute.network.create
           inputs:
-            network:
-              default: {}
+            name:
+              default: { get_property: [SELF, name] }
+            auto_subnets:
+              default: { get_property: [SELF, auto_subnets] }
         delete:
           implementation: gcp_plugin.cloudify_gcp.compute.network.delete
+
+  cloudify.gcp.nodes.SubNetwork:
+    derived_from: cloudify.nodes.Subnet
+    properties:
+      use_external_resource:
+        description: >
+          Indicate whether the resource exists or if Cloudify should create the resource.
+        type: boolean
+        default: false
+      resource_id:
+        description: >
+          If "use_external_resource" is set to true, this field will be used as a name
+          of existing network that is referenced by this node.
+        default: ''
+      name:
+        default: ''
+      region:
+        description: >
+          The region this subnet is in. See https://cloud.google.com/compute/docs/regions-zones/regions-zones
+        type: string
+      subnet:
+        description: >
+          The subnet, denoted in CIDR form (i.e. '10.8.0.0/20')
+          Subnets must be unique and non-overlapping within a project.
+          See https://cloud.google.com/compute/docs/subnetworks#networks_and_subnetworks
+        type: string
+      gcp_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Google Cloud Platform API.
+        default: {}
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: gcp_plugin.cloudify_gcp.compute.subnetwork.create
+          inputs:
+            name:
+              default: { get_property: [SELF, name] }
+            region:
+              default: { get_property: [SELF, region] }
+            subnet:
+              default: { get_property: [SELF, subnet] }
+        delete:
+          implementation: gcp_plugin.cloudify_gcp.compute.subnetwork.delete
+      cloudify.interfaces.validation:
+        create:
+          implementation: gcp_plugin.cloudify_gcp.compute.subnetwork.creation_validation
 
   cloudify.gcp.nodes.FirewallRule:
     derived_from: cloudify.nodes.Root
@@ -930,7 +985,7 @@ relationships:
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
         preconfigure:
-          implementation: gcp_plugin.gcp.compute.instance.contained_in
+          implementation: gcp_plugin.cloudify_gcp.compute.instance.contained_in
 
   cloudify.gcp.relationships.dns_record_contained_in_zone:
     derived_from: cloudify.relationships.contained_in
@@ -939,6 +994,15 @@ relationships:
         create:
           implementation: gcp_plugin.cloudify_gcp.dns.record.validate_contained_in
 
-
   cloudify.gcp.relationships.dns_record_connected_to_instance:
     derived_from: cloudify.relationships.connected_to
+
+  cloudify.gcp.relationships.subnet_contained_in_network:
+    derived_from: cloudify.relationships.contained_in
+
+  cloudify.gcp.relationships.instance_contained_in_network:
+    derived_from: cloudify.relationships.contained_in
+    source_interfaces:
+      cloudify.interfaces.validation:
+        create:
+          implementation: gcp_plugin.cloudify_gcp.compute.instance.validate_contained_in_network

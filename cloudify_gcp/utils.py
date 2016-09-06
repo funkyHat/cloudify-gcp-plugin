@@ -13,6 +13,8 @@
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 
+from os.path import basename
+
 import re
 import string
 import time
@@ -21,8 +23,10 @@ from copy import deepcopy
 from functools import wraps
 
 from googleapiclient.errors import HttpError
+from proxy_tools import Proxy
 
 from cloudify import ctx
+from cloudify.context import CloudifyContext
 from cloudify.exceptions import NonRecoverableError
 
 from . import constants
@@ -145,6 +149,27 @@ def sync_operation(func):
         return operation.last_response
 
     return wraps(func)(_decorator)
+
+
+def async_operation():
+    props = ctx.instance.runtime_properties
+    response = props.get('_operation', None)
+    if response:
+        import pdb; pdb.set_trace()
+        operation = response_to_operation(
+                response,
+                get_gcp_config(),
+                ctx.logger)
+        response = operation.get()
+
+        if response['status'] in ('PENDING', 'RUNNING'):
+            return ctx.operation.retry(
+                    'Object not created yet: {}'.format(response['status']), 5)
+        elif response['status'] == 'DONE':
+            ctx.instance.runtime_properties.pop('_operation')
+            return True
+        raise NonRecoverableError(
+                'Unknown status response from object creation')
 
 
 def retry_on_failure(msg, delay=constants.RETRY_DEFAULT_DELAY):
@@ -297,21 +322,22 @@ def get_agent_ssh_key_string():
 
 
 def response_to_operation(response, config, logger):
-    operation_name = response['name']
-
     if 'zone' in response:
-        return ZoneOperation(config, logger, operation_name)
+        return ZoneOperation(config, logger, response)
     elif 'region' in response:
-        raise NonRecoverableError('RegionOperation is not implemented')
+        return RegionOperation(config, logger, response)
     else:
-        return GlobalOperation(config, logger, operation_name)
+        return GlobalOperation(config, logger, response)
 
 
 class Operation(GoogleCloudPlatform):
     __metaclass__ = ABCMeta
 
-    def __init__(self, config, logger, name):
-        super(GlobalOperation, self).__init__(config, logger, name)
+    def __init__(self, config, logger, response):
+        super(Operation, self).__init__(config, logger, response['name'])
+        for item in ('zone', 'region'):
+            if item in response:
+                setattr(self, item, response[item])
         self.last_response = None
         self.last_status = None
 
@@ -338,9 +364,74 @@ class GlobalOperation(Operation):
             operation=self.name).execute()
 
 
+class RegionOperation(Operation):
+    def _get(self):
+        return self.discovery.regionOperations().get(
+            project=self.project,
+            region=basename(self.region),
+            operation=self.name).execute()
+
+
 class ZoneOperation(Operation):
     def _get(self):
         return self.discovery.zoneOperations().get(
             project=self.project,
             zone=self.zone,
             operation=self.name).execute()
+
+
+def get_relationships(
+        relationships,
+        filter_relationships=None,
+        filter_nodes=None):
+    """
+    Get all relationships of a particular node or the current context.
+
+    Optionally filter based on relationship type, node type.
+    """
+    if isinstance(relationships, (CloudifyContext, Proxy)):
+        # Shortcut to support supplying ctx directly
+        relationships = relationships.instance.relationships
+    # And coerce the other inputs to lists if they are strings:
+    if isinstance(filter_relationships, basestring):
+        filter_relationships = [filter_relationships]
+    if isinstance(filter_nodes, basestring):
+        filter_nodes = [filter_nodes]
+    results = []
+    for rel in relationships:
+        if filter_relationships and rel.type not in filter_relationships:
+            rel = None
+        if filter_nodes and rel.target.node.type not in filter_nodes:
+            rel = None
+        if rel:
+            results.append(rel)
+    return results
+
+
+def nonrecoverable_errors(fun):
+    """Decorator which raises NonRecoverableError if non recoverable errors
+    from gcp are caught"""
+    def wrap(*args, **kwargs):
+        try:
+            fun(*args, **kwargs)
+        except GCPError as e:
+            if (True):
+                raise NonRecoverableError(e)
+            raise
+
+    return wraps(fun)(wrap)
+
+
+def operation(fun, *args, **kwargs):
+    """Combine @operation and @nonrecoverable_errors"""
+    import inspect
+
+    @wraps(fun)
+    @nonrecoverable_errors
+    def wrap(*args, **kwargs):
+        if (fun.__name__ == 'create' and
+                hasattr(inspect.getmodule(fun), 'creation_validation')):
+            inspect.getmodule(fun).creation_validation(*args, **kwargs)
+        fun(*args, **kwargs)
+
+    return wrap
