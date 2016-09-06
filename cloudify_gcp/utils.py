@@ -159,7 +159,6 @@ def async_operation():
     props = ctx.instance.runtime_properties
     response = props.get('_operation', None)
     if response:
-        import pdb; pdb.set_trace()
         operation = response_to_operation(
                 response,
                 get_gcp_config(),
