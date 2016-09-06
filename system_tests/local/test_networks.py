@@ -13,74 +13,9 @@
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 
-from copy import copy
-import os
-
 from cosmo_tester.framework.testenv import TestCase
-from cloudify.workflows import local
-from cloudify_cli import constants as cli_constants
 
-
-class GCPNetworkTest(object):
-
-    def setUp(self):
-        super(GCPNetworkTest, self).setUp()
-
-        self.ext_inputs = {
-                k: self.env.cloudify_config[k]
-                for k in (
-                    'gcp_auth',
-                    'project',
-                    'zone',
-                    'network',
-                )}
-
-        blueprints_path = os.path.split(os.path.abspath(__file__))[0]
-        blueprints_path = os.path.split(blueprints_path)[0]
-        self.blueprints_path = os.path.join(
-            blueprints_path,
-            'resources',
-            'networks'
-        )
-
-    def test_blueprint(self):
-        blueprint = os.path.join(self.blueprints_path, self.blueprint_name)
-
-        if self.env.install_plugins:
-            self.logger.info('installing required plugins')
-            self.cfy.install_plugins_locally(
-                blueprint_path=blueprint)
-
-        self.logger.info('Creating a new Network')
-
-        inputs = copy(self.ext_inputs)
-
-        self.network_env = local.init_env(
-            blueprint,
-            inputs=inputs,
-            name=self._testMethodName,
-            ignored_modules=cli_constants.IGNORED_LOCAL_WORKFLOW_MODULES)
-
-        self.addCleanup(
-            self.network_env.execute,
-            'uninstall',
-            task_retries=10,
-            task_retry_interval=3,
-            )
-
-        self.network_env.execute(
-            'install',
-            task_retries=10,
-            task_retry_interval=3,
-        )
-
-        self.outputs = self.network_env.outputs()
-
-        self.assertions()
-
-    def assertions(self):
-        pass
-
+from . import GCPTest
 
 '''
 class GCPSimpleNetworkTest(GCPNetworkTest, TestCase):
