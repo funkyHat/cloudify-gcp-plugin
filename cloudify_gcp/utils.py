@@ -140,7 +140,7 @@ def create(resource):
 
 def delete_if_not_external(resource):
     if not should_use_external_resource():
-        resource.delete()
+        return resource.delete()
 
 
 def sync_operation(func):
@@ -169,7 +169,8 @@ def async_operation():
             return ctx.operation.retry(
                     'Object not created yet: {}'.format(response['status']), 5)
         elif response['status'] == 'DONE':
-            ctx.instance.runtime_properties.pop('_operation')
+            del props['_operation']
+            props.pop('name', None)
             return True
         raise NonRecoverableError(
                 'Unknown status response from object creation')
@@ -379,7 +380,7 @@ class ZoneOperation(Operation):
     def _get(self):
         return self.discovery.zoneOperations().get(
             project=self.project,
-            zone=self.zone,
+            zone=basename(self.zone),
             operation=self.name).execute()
 
 

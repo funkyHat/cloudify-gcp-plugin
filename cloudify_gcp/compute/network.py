@@ -120,7 +120,6 @@ def create(name, auto_subnets, **kwargs):
             auto_subnets=auto_subnets,
             name=name)
     if utils.async_operation():
-        ctx.instance.runtime_properties.pop('_operation')
         ctx.instance.runtime_properties.update(network.get())
     else:
         response = utils.create(network)
@@ -132,16 +131,20 @@ def create(name, auto_subnets, **kwargs):
 
 @operation
 @utils.throw_cloudify_exceptions
-def delete(**kwargs):
+def delete(name, **kwargs):
     gcp_config = utils.get_gcp_config()
-    name = ctx.instance.runtime_properties.get('name', None)
+    props = ctx.instance.runtime_properties
+
+    if props.get('name', None):
+        name = props['name']
+    else:
+        name = utils.get_final_resource_name(name)
+
     network = Network(gcp_config,
                       ctx.logger,
                       name)
-    if utils.async_operation():
-        del ctx.instance.runtime_properties['_operation']
-        del ctx.instance.runtime_properties['name']
-    else:
+
+    if not utils.async_operation():
         response = utils.delete_if_not_external(network)
         ctx.instance.runtime_properties['_operation'] = response
         ctx.operation.retry(

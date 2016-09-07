@@ -13,15 +13,17 @@
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 
+import random
+from os.path import basename
+
 from cloudify import ctx
 from cloudify.decorators import operation
+from cloudify.context import CloudifyContext
 from cloudify.exceptions import NonRecoverableError
 
 from .. import utils
 from .. import constants
 from .keypair import KeyPair
-from .network import Network
-from .subnetwork import SubNetwork
 from ..gcp import (
         GCPError,
         check_response,
@@ -49,6 +51,7 @@ class Instance(GoogleCloudPlatform):
                  scopes=None,
                  ssh_keys=None,
                  network=None,
+                 subnetwork=None,
                  zone=None,
                  ):
         """
@@ -78,6 +81,7 @@ class Instance(GoogleCloudPlatform):
         self.ssh_keys = ssh_keys or []
         self.zone = zone
         self.network = network
+        self.subnetwork = subnetwork
 
     @check_response
     def create(self):
@@ -92,7 +96,7 @@ class Instance(GoogleCloudPlatform):
         """
         return self.discovery.instances().insert(
             project=self.project,
-            zone=self.zone,
+            zone=basename(self.zone),
             body=self.to_dict()).execute()
 
     @check_response
@@ -107,7 +111,7 @@ class Instance(GoogleCloudPlatform):
         self.logger.info('Delete instance {0}'.format(self.name))
         return self.discovery.instances().delete(
             project=self.project,
-            zone=self.zone,
+            zone=basename(self.zone),
             instance=self.name).execute()
 
     @check_response
@@ -129,7 +133,7 @@ class Instance(GoogleCloudPlatform):
         fingerprint = tag_dict['fingerprint']
         return self.discovery.instances().setTags(
             project=self.project,
-            zone=self.zone,
+            zone=basename(self.zone),
             instance=self.name,
             body={'items': self.tags, 'fingerprint': fingerprint}).execute()
 
@@ -154,7 +158,7 @@ class Instance(GoogleCloudPlatform):
         fingerprint = tag_dict['fingerprint']
         return self.discovery.instances().setTags(
             project=self.project,
-            zone=self.zone,
+            zone=basename(self.zone),
             instance=self.name,
             body={'items': self.tags, 'fingerprint': fingerprint}).execute()
 
@@ -171,7 +175,7 @@ class Instance(GoogleCloudPlatform):
         return self.discovery.instances().get(
             instance=self.name,
             project=self.project,
-            zone=self.zone).execute()
+            zone=basename(self.zone)).execute()
 
     @check_response
     def add_access_config(self, ip_address=''):
@@ -195,7 +199,7 @@ class Instance(GoogleCloudPlatform):
         return self.discovery.instances().addAccessConfig(
             project=self.project,
             instance=self.name,
-            zone=self.zone,
+            zone=basename(self.zone),
             networkInterface=self.NETWORK_INTERFACE,
             body=body).execute()
 
@@ -214,7 +218,7 @@ class Instance(GoogleCloudPlatform):
         return self.discovery.instances().deleteAccessConfig(
             project=self.project,
             instance=self.name,
-            zone=self.zone,
+            zone=basename(self.zone),
             accessConfig=self.ACCESS_CONFIG,
             networkInterface=self.NETWORK_INTERFACE).execute()
 
@@ -228,7 +232,7 @@ class Instance(GoogleCloudPlatform):
         """
         return self.discovery.instances().attachDisk(
             project=self.project,
-            zone=self.zone,
+            zone=basename(self.zone),
             instance=self.name,
             body=disk).execute()
 
@@ -242,7 +246,7 @@ class Instance(GoogleCloudPlatform):
         """
         return self.discovery.instances().detachDisk(
             project=self.project,
-            zone=self.zone,
+            zone=basename(self.zone),
             instance=self.name,
             deviceName=disk_name).execute()
 
@@ -258,21 +262,26 @@ class Instance(GoogleCloudPlatform):
 
         return self.discovery.instances().list(
             project=self.project,
-            zone=self.zone).execute()
+            zone=basename(self.zone)).execute()
 
     def to_dict(self):
         def add_key_value_to_metadata(key, value, body):
             body['metadata']['items'].append({'key': key, 'value': value})
+
+        network = {'network': 'global/networks/default'}
+        if self.network and self.network != 'default':
+            network['network'] = self.network
+        if self.subnetwork:
+            network['subnetwork'] = self.subnetwork
 
         body = {
             'name': self.name,
             'description': 'Cloudify generated instance',
             'tags': {'items': list(set(self.tags))},
             'machineType': 'zones/{0}/machineTypes/{1}'.format(
-                self.zone,
+                basename(self.zone),
                 self.machine_type),
-            'networkInterfaces': [
-                {'network': 'global/networks/{0}'.format(self.network)}],
+            'networkInterfaces': [network],
             'serviceAccounts': [
                 {'email': 'default',
                  'scopes': self.scopes
@@ -328,26 +337,32 @@ def create(instance_type,
         script = startup_script.get('script')
     ssh_keys = get_ssh_keys()
 
-    network = None
+    network = subnetwork = None
     network_list = utils.get_relationships(
             ctx,
             filter_relationships='cloudify.gcp.relationships.'
                                  'instance_contained_in_network',
             )
     if len(network_list) > 0:
-        network = network_list[0]
-        if network.node.type == 'cloudify.gcp.nodes.Network':
-            network = network.instance.runtime_properties['name']
-        elif network.node.type == 'cloudify.gcp.nodes.SubNetwork':
-            network = network.instance.runtime_properties['network']
+        net_node = network_list[0].target
+        if net_node.node.type == 'cloudify.gcp.nodes.Network':
+            network = net_node.instance.runtime_properties['selfLink']
+        elif net_node.node.type == 'cloudify.gcp.nodes.SubNetwork':
+            network = net_node.instance.runtime_properties['network']
+            subnetwork = net_node.instance.runtime_properties['selfLink']
+        else:
+            raise NonRecoverableError(
+                'Unsupported target type for '
+                "'cloudify.gcp.relationships.instance_contained_in_network")
     else:
         network = utils.get_gcp_resource_name(gcp_config['network'])
 
-    if not zone and isinstance(network, (Network, SubNetwork)):
-        # The zone must be within the network
-        zone = '{}-a'.format(network.runtime_properties['region'])
-    elif not zone:
-        zone = utils.get_gcp_resource_name(gcp_config['zone'])
+    if not zone:
+        if subnetwork:
+            zone = random.choice(constants.REGION_ZONES_FULL[
+                basename(net_node.instance.runtime_properties['region'])])
+        else:
+            zone = utils.get_gcp_resource_name(gcp_config['zone'])
 
     instance_name = utils.get_final_resource_name(name)
     instance = Instance(gcp_config,
@@ -361,11 +376,9 @@ def create(instance_type,
                         tags=tags,
                         ssh_keys=ssh_keys,
                         network=network,
+                        subnetwork=subnetwork,
                         zone=zone,
                         )
-    ctx.instance.runtime_properties[constants.NAME] = instance.name
-    ctx.instance.runtime_properties['zone'] = instance.zone
-    ctx.instance.runtime_properties['name'] = instance.name
     if not utils.is_manager_instance():
         add_to_security_groups(instance)
     disk = ctx.instance.runtime_properties.get(constants.DISK)
@@ -374,8 +387,14 @@ def create(instance_type,
     if not instance.disks and not instance.image:
         raise NonRecoverableError("A disk image ID must be provided")
 
-    utils.create(instance)
-    ctx.instance.runtime_properties.update(instance.get())
+    if utils.async_operation():
+        ctx.instance.runtime_properties.update(instance.get())
+    else:
+        response = utils.create(instance)
+        ctx.instance.runtime_properties['_operation'] = response
+        ctx.operation.retry(
+                'Instance creation started',
+                constants.RETRY_DEFAULT_DELAY)
 
 
 @operation
@@ -386,33 +405,30 @@ def start(**kwargs):
     instance = Instance(gcp_config,
                         ctx.logger,
                         name=props['name'],
-                        zone=props['zone'],
+                        zone=basename(props['zone']),
                         )
     set_ip(instance)
 
 
 @operation
-@utils.retry_on_failure('Retrying deleting instance')
 @utils.throw_cloudify_exceptions
-def delete(**kwargs):
+def delete(name, **kwargs):
     gcp_config = utils.get_gcp_config()
     props = ctx.instance.runtime_properties
-    import pdb; pdb.set_trace()
-    if props['name']:
-        instance = Instance(gcp_config,
-                            ctx.logger,
-                            name=props['name'],
-                            zone=props['zone'],
-                            )
-        if utils.should_use_external_resource() or \
-                utils.is_object_deleted(instance):
-            ctx.instance.runtime_properties.pop(constants.DISK, None)
-            ctx.instance.runtime_properties.pop('name', None)
-            ctx.instance.runtime_properties.pop(constants.GCP_ZONE, None)
-        else:
-            utils.delete_if_not_external(instance)
-            ctx.operation.retry('Instance is not yet deleted. Retrying:',
-                                constants.RETRY_DEFAULT_DELAY)
+    if props.get('name', None):
+        name = props['name']
+    else:
+        name = utils.get_final_resource_name(name)
+    instance = Instance(gcp_config,
+                        ctx.logger,
+                        name=name,
+                        zone=basename(props['zone']),
+                        )
+    if not utils.async_operation():
+        response = utils.delete_if_not_external(instance)
+        ctx.instance.runtime_properties['_operation'] = response
+        ctx.operation.retry('Instance is not yet deleted. Retrying:',
+                            constants.RETRY_DEFAULT_DELAY)
 
 
 @operation
@@ -553,10 +569,6 @@ def get_ssh_keys():
 
 
 def validate_contained_in_network(**kwargs):
-    gcp_config = utils.get_gcp_config()
-    instance = Instance(gcp_config,
-                        ctx.logger,
-                        name=instance_name)
     rels = utils.get_relationships(
             ctx,
             filter_relationships='cloudify.gcp.relationships.'
@@ -569,3 +581,11 @@ def validate_contained_in_network(**kwargs):
     if len(rels) > 1:
         raise NonRecoverableError(
                 'Instances may only be contained in 1 Network or SubNetwork')
+    elif len(rels) == 1:
+        network = rels[0].target
+        if (network.node.type == 'cloudify.gcp.nodes.Network' and
+                not network.node.properties['auto_subnets']):
+            raise NonRecoverableError(
+                    'It is invalid to connect an instance directly to a '
+                    'network with custom Subtneworks (i.e. `auto_subnets` '
+                    'disabled')

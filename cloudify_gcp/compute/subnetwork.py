@@ -140,7 +140,6 @@ def create(name, region, subnet, **kwargs):
             network.runtime_properties['selfLink'],
             )
     if utils.async_operation():
-        ctx.instance.runtime_properties.pop('_operation')
         ctx.instance.runtime_properties.update(subnetwork.get())
     else:
         response = utils.create(subnetwork)
@@ -161,10 +160,7 @@ def delete(**kwargs):
             name=name,
             region=ctx.instance.runtime_properties['region']
             )
-    if utils.async_operation():
-        del ctx.instance.runtime_properties['_operation']
-        del ctx.instance.runtime_properties['name']
-    else:
+    if not utils.async_operation():
         response = utils.delete_if_not_external(subnetwork)
         ctx.instance.runtime_properties['_operation'] = response
         ctx.operation.retry(

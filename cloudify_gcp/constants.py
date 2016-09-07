@@ -65,3 +65,18 @@ MANAGER_PLUGIN_FILES = os.path.join('etc', 'cloudify', 'gcp_plugin')
 GCP_DEFAULT_CONFIG_PATH = os.path.join(MANAGER_PLUGIN_FILES, 'gcp_config.json')
 
 RETRY_DEFAULT_DELAY = 30
+
+REGION_ZONES = {
+        'us-west1': 'ab',
+        'us-central1': 'abcf',
+        'us-east1': 'bcd',
+        'europe-west1': 'bcd',
+        'asia-east1': 'abc',
+        }
+
+# As specified & listed at
+# https://cloud.google.com/compute/docs/regions-zones/regions-zones
+REGION_ZONES_FULL = {
+        k: ['{region}-{zone}'.format(region=k, zone=x) for x in v]
+        for k, v in REGION_ZONES.items()
+        }

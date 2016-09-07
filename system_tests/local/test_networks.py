@@ -17,17 +17,34 @@ from cosmo_tester.framework.testenv import TestCase
 
 from . import GCPTest
 
-'''
-class GCPSimpleNetworkTest(GCPNetworkTest, TestCase):
+
+class GCPSimpleNetworkTest(GCPTest, TestCase):
     blueprint_name = 'simple-blueprint.yaml'
 
     def assertions(self):
         pass
-    '''
 
 
-class GCPNetAndSubnetTest(GCPNetworkTest, TestCase):
+class GCPNetAndSubnetTest(GCPTest, TestCase):
     blueprint_name = 'net-and-subnet-blueprint.yaml'
 
     def assertions(self):
-        pass
+
+        storage = self.test_env.storage
+        simple_network = storage.get_node_instances('simple-network')[0]
+        simple_subnet_a = storage.get_node_instances('simple-subnet_a')[0]
+        simple_subnet_b = storage.get_node_instances('simple-subnet_b')[0]
+
+        for ex, ac in (
+            ('networkname', simple_network['runtime_properties']['name']),
+            (False,
+                simple_network['runtime_properties'][
+                    'autoCreateSubnetworks']),
+            ('10.11.12.0/22', simple_subnet_a['runtime_properties'][
+                'ipCidrRange']),
+            ('10.11.16.0/22', simple_subnet_b['runtime_properties'][
+                'ipCidrRange']),
+
+            ('networkname', self.test_env.outputs()['simple-network']),
+        ):
+            self.assertEqual(ex, ac)
