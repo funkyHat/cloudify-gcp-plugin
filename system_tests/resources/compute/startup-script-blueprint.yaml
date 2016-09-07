@@ -8,6 +8,8 @@ imports:
 
 inputs:
   gcp_auth:
+    required: true
+
   project:
   network:
   zone:
@@ -29,13 +31,21 @@ node_templates:
   vm:
     type: cloudify.gcp.nodes.Instance
     properties:
-      image_id: { get_input: image_id }
       gcp_config: *gcp_config
+      image_id: { get_input: image_id }
       install_agent: false
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          inputs:
+            startup_script:
+              type: string
+              script: >
+                #!/bin/sh
+                echo hurrah! >/cloudify-gcp-plugin-test-startup-script-success
 
 
 outputs:
-  ip:
+  ip: 
     value: { get_attribute: [vm, ip] }
-  name:
-    value: { get_attribute: [vm, instance_name] }
+

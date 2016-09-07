@@ -34,3 +34,20 @@ class GCPInstanceTest(GCPTest, TestCase):
                 self.outputs['name'],
                 self.test_env.storage.get_node_instances('vm')[0]['id']
                 )
+
+
+class GCPInstanceScriptTest(GCPTest, TestCase):
+    blueprint_name = 'compute/startup-script-blueprint.yaml'
+
+    inputs = (
+            'project',
+            'network',
+            'zone',
+            'gcp_auth',
+            'image_id',
+            )
+
+    def assertions(self):
+        ip = [int(n) for n in self.outputs['ip'].split('.')]
+        self.assertEqual(10, ip[0])
+        self.assertEqual(4, len(ip))

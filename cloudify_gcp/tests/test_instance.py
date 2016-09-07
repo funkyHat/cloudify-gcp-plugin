@@ -76,6 +76,7 @@ class TestGCPInstance(TestGCP):
                 {
                     'gcp_zone': 'zone',
                     'gcp_name': 'valid_name',
+                    'instance_name': 'name',
                     'startup_script': {'type': 'string'},
                  },
                 self.ctxmock.instance.runtime_properties
@@ -123,7 +124,8 @@ class TestGCPInstance(TestGCP):
     @patch('cloudify_gcp.utils.get_item_from_gcp_response',
            return_value={'networkInterfaces': [{'networkIP': 'a'}]})
     def test_start(self, mock_getitem, mock_build, *args):
-        instance.start('name')
+        self.ctxmock.instance.runtime_properties['instance_name'] = 'name'
+        instance.start()
 
         self.assertEqual(
                 self.ctxmock.instance.runtime_properties['ip'],
