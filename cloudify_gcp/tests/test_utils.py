@@ -85,7 +85,6 @@ class TestUtils(unittest.TestCase):
                         properties={
                             'use_external_resource': True,
                         }))):
-            # import pdb; pdb.set_trace()
             self.assertTrue(utils.should_use_external_resource())
 
     def test_is_object_deleted(self):

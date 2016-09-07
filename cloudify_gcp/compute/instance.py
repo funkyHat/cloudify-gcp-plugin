@@ -306,8 +306,9 @@ def create(instance_type,
            scopes,
            tags,
            **kwargs):
+    props = ctx.instance.runtime_properties
     if zone:
-        ctx.instance.runtime_properties[constants.GCP_ZONE] = zone
+        props[constants.GCP_ZONE] = zone
     gcp_config = utils.get_gcp_config()
     gcp_config['network'] = utils.get_gcp_resource_name(gcp_config['network'])
     script = ''
@@ -321,10 +322,12 @@ def create(instance_type,
         script = startup_script.get('script')
     ssh_keys = get_ssh_keys()
 
-    instance_name = utils.get_final_resource_name(name)
+    props['instance_name'] = name if name else ctx.instance.id
+    props['instance_name'] = utils.get_final_resource_name(
+            props['instance_name'])
     instance = Instance(gcp_config,
                         ctx.logger,
-                        name=instance_name,
+                        name=props['instance_name'],
                         image=image_id,
                         machine_type=instance_type,
                         external_ip=external_ip,
@@ -343,12 +346,11 @@ def create(instance_type,
 
 @operation
 @utils.throw_cloudify_exceptions
-def start(name,
-          **kwargs):
+def start(**kwargs):
     gcp_config = utils.get_gcp_config()
     instance = Instance(gcp_config,
                         ctx.logger,
-                        name=name)
+                        name=ctx.instance.runtime_properties['instance_name'])
     set_ip(instance)
 
 

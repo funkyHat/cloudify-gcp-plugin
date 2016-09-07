@@ -93,10 +93,15 @@ class GoogleCloudPlatform(object):
         :raise: GCPError if there is a problem with service account JSON file:
         e.g. the file is not under the given path or it has wrong permissions
         """
+        if hasattr(self.auth, 'get'):
+            creds_func = ServiceAccountCredentials.from_json_keyfile_dict
+        else:
+            creds_func = ServiceAccountCredentials.from_json_keyfile_name
+
         try:
-            credentials = ServiceAccountCredentials.from_json_keyfile_dict(
-                self.auth,
-                scopes=scope)
+            credentials = creds_func(
+                    self.auth,
+                    scopes=scope)
             http = httplib2.Http()
             credentials.authorize(http)
             return build(discovery, api_version, http=http)
