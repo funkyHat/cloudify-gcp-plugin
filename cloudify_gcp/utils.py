@@ -20,9 +20,11 @@ from abc import ABCMeta, abstractmethod
 from copy import deepcopy
 from functools import wraps
 
+from proxy_tools import Proxy
 from googleapiclient.errors import HttpError
 
 from cloudify import ctx
+from cloudify.context import CloudifyContext
 from cloudify.exceptions import NonRecoverableError
 
 from . import constants
@@ -163,18 +165,6 @@ def retry_on_failure(msg, delay=constants.RETRY_DEFAULT_DELAY):
     return _retry_on_failure
 
 
-def get_firewall_rule_name(network, firewall):
-    """
-    Prefix firewall rule name with network name
-
-    :param network: network to which the firewall rule belongs
-    :param firewall: firewall for which the name is created
-    :return: network prefixed firewall rule name
-    """
-    name = '{0}-{1}'.format(network, firewall)
-    return get_gcp_resource_name(name)
-
-
 def throw_cloudify_exceptions(func):
     def _decorator(*args, **kwargs):
         try:
@@ -235,32 +225,6 @@ def get_manager_provider_config():
     return provider_context
 
 
-def create_firewall_structure_from_rules(network, rules):
-    firewall = {'name': get_firewall_rule_name(network, ctx.instance.id),
-                'allowed': [],
-                constants.SOURCE_TAGS: [],
-                'sourceRanges': [],
-                constants.TARGET_TAGS: []}
-
-    for rule in rules:
-        source_tags = rule.get('source_tags', [])
-        target_tags = rule.get('target_tags', [])
-        for tag in source_tags:
-            tag = get_gcp_resource_name(tag)
-            if tag not in firewall[constants.SOURCE_TAGS]:
-                firewall[constants.SOURCE_TAGS].append(tag)
-        for tag in target_tags:
-            tag = get_gcp_resource_name(tag)
-            if tag not in firewall[constants.TARGET_TAGS]:
-                firewall[constants.TARGET_TAGS].append(tag)
-        firewall['allowed'].extend([{'IPProtocol': rule.get('ip_protocol'),
-                                     'ports': [rule.get('port', [])]}])
-        cidr = rule.get('cidr_ip')
-        if cidr and cidr not in firewall['sourceRanges']:
-            firewall['sourceRanges'].append(cidr)
-    return firewall
-
-
 def is_object_deleted(obj):
     try:
         obj.get()
@@ -311,7 +275,7 @@ class Operation(GoogleCloudPlatform):
     __metaclass__ = ABCMeta
 
     def __init__(self, config, logger, name):
-        super(GlobalOperation, self).__init__(config, logger, name)
+        super(Operation, self).__init__(config, logger, name)
         self.last_response = None
         self.last_status = None
 
@@ -344,3 +308,54 @@ class ZoneOperation(Operation):
             project=self.project,
             zone=self.zone,
             operation=self.name).execute()
+
+
+def get_relationships(
+        relationships,
+        filter_relationships=None,
+        filter_nodes=None):
+    """
+    Get all relationships of a particular node or the current context.
+
+    Optionally filter based on relationship type, node type.
+    """
+    if isinstance(relationships, (CloudifyContext, Proxy)):
+        # Shortcut to support supplying ctx directly
+        relationships = relationships.instance.relationships
+    # And coerce the other inputs to lists if they are strings:
+    if isinstance(filter_relationships, basestring):
+        filter_relationships = [filter_relationships]
+    if isinstance(filter_nodes, basestring):
+        filter_nodes = [filter_nodes]
+    results = []
+    for rel in relationships:
+        if filter_relationships and rel.type not in filter_relationships:
+            rel = None
+        if filter_nodes and rel.target.node.type not in filter_nodes:
+            rel = None
+        if rel:
+            results.append(rel)
+    return results
+
+
+def get_network(ctx):
+    """
+    Get the containing network for the current node.
+
+    Returns either the network the node is contained in, or the network
+    specified in the GCP config.
+    """
+
+    rels = get_relationships(
+            ctx,
+            filter_relationships='cloudify.gcp.relationships.'
+                                 'contained_in_network')
+    if rels:
+        network = rels[0].target.instance.runtime_properties['name']
+    else:
+        network = get_gcp_config()['network']
+
+    if network == 'default':
+        network = 'global/networks/default'
+
+    return network

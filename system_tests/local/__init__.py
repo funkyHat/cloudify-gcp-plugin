@@ -95,3 +95,5 @@ class GCPTest(object):
         self.outputs = self.test_env.outputs()
 
         self.assertions()
+
+        print('test_blueprint succeded')

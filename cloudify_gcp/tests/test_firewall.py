@@ -23,22 +23,30 @@ from . import TestGCP
 
 @patch('cloudify_gcp.utils.assure_resource_id_correct', return_value=True)
 @patch('cloudify_gcp.gcp.ServiceAccountCredentials.from_json_keyfile_dict')
-@patch('cloudify_gcp.utils.get_gcp_resource_name', return_value='valid_name')
 @patch('cloudify_gcp.gcp.build')
 class TestGCPFirewall(TestGCP):
 
+    def setUp(self):
+        super(TestGCPFirewall, self).setUp()
+        self.ctxmock.instance.relationships = []
+
     def test_create(self, mock_build, *args):
         firewall.create(
-                {},
                 'name',
+                allowed={'tcp': 'pct'},
+                sources=['1', 'sauce'],
+                target_tags=None,
                 )
 
         mock_build.assert_called_once()
         mock_build().firewalls().insert.assert_called_with(
                 body={
-                    'name': 'valid_name',
-                    'network': 'global/networks/valid_name',
-                    },
+                    'network': 'not a real network',
+                    'sourceTags': ['sauce'],
+                    'description': 'Cloudify generated FirewallRule',
+                    'sourceRanges': ['1'],
+                    'allowed': [{'IPProtocol': 'tcp', 'ports': 'pct'}],
+                    'name': 'name'},
                 project='not really a project'
                 )
 
@@ -46,8 +54,10 @@ class TestGCPFirewall(TestGCP):
         self.ctxmock.node.properties['use_external_resource'] = True
 
         firewall.create(
-                {},
                 'name',
+                allowed={},
+                sources={},
+                target_tags=None,
                 )
 
         mock_build.assert_called_once()
@@ -57,45 +67,71 @@ class TestGCPFirewall(TestGCP):
                 )
 
     def test_delete(self, mock_build, *args):
-        self.ctxmock.instance.runtime_properties['gcp_name'] = 'delete_name'
+        self.ctxmock.instance.runtime_properties['name'] = 'delete_name'
         firewall.delete()
 
         mock_build.assert_called_once()
         mock_build().firewalls().delete.assert_called_with(
-                firewall='delete_name',
+                firewall='delete-name',
                 project='not really a project',
                 )
 
     def test_create_security_group(self, mock_build, *args):
         firewall.create_security_group(
+                'name',
                 [
                     {
-                        'cidr_ip': 'abcdefg',
-                        'source_tags': ['s_tag_1', 's_tag_2'],
-                        'target_tags': ['t_tag_1', 't_tag_2'],
-                        },
-                    ],
-                'name',
+                        'allowed': {'NOTHING!': ''},
+                        'sources': ['bob', 'jane'],
+                    },
+                    {
+                        'allowed': {'tcp': ['40', 41]},
+                        'sources': ['jane'],
+                    },
+                ],
                 )
 
-        mock_build.assert_called_once()
-        mock_build().firewalls().insert.assert_called_with(
-                body={
-                    'network': 'global/networks/not a real network',
-                    'sourceTags': ['valid_name'],
-                    'sourceRanges': ['abcdefg'],
-                    'targetTags': ['valid_name'],
-                    'allowed': [{'IPProtocol': None, 'ports': [[]]}],
-                    'name': 'valid_name'},
-                project='not really a project'
-                )
+        self.assertEqual(2, mock_build.call_count)
+        for body in [
+                {
+                    'network': 'not a real network',
+                    'sourceTags': ['bob', 'jane'],
+                    'description': 'Cloudify generated SG part',
+                    'sourceRanges': [],
+                    'targetTags': ['ctx-sg-name'],
+                    'allowed': [{'IPProtocol': 'NOTHING!'}],
+                    'name': 'ctx-sg-name-from-bobjane-to-nothing',
+                },
+                {
+                    'network': 'not a real network',
+                    'sourceTags': ['jane'],
+                    'description': 'Cloudify generated SG part',
+                    'sourceRanges': [],
+                    'targetTags': ['ctx-sg-name'],
+                    'allowed': [{
+                        'IPProtocol': 'tcp',
+                        'ports': ['40', 41]}],
+                    'name': 'ctx-sg-name-from-jane-to-tcp4041',
+                },
+                ]:
+
+            mock_build().firewalls().insert.assert_any_call(
+                    body=body,
+                    project='not really a project'
+                    )
 
     def test_delete_security_group(self, mock_build, *args):
-        self.ctxmock.instance.runtime_properties['gcp_name'] = 'delete_name'
+        props = self.ctxmock.instance.runtime_properties
+        props['gcp_name'] = 'delete_name'
+        props['rules'] = [
+                {'name': 'You do not talk about Fight Club'},
+                {'name': 'You DO NOT talk about Fight Club'},
+                ]
+
         firewall.delete_security_group()
 
-        mock_build.assert_called_once()
+        self.assertEqual(2, mock_build.call_count)
         mock_build().firewalls().delete.assert_called_with(
-                firewall='delete_name',
+                firewall='youdonottalkaboutfightclub',
                 project='not really a project',
                 )

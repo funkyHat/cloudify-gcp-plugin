@@ -231,6 +231,26 @@ node_types:
           Optional security group name. By default it will be network name
           plus node name.
         default: ''
+      allowed:
+        description: >
+          Dictionary of allowed ports per protocol, in the form
+            protocol: [port, ...]
+          If no ports are specified then all ports are opened for that protocol
+          eg:
+            tcp: 80, 443
+            udp:
+      sources:
+        description: |
+          List of CIDR formatted ranges and instance tags which
+          will be permitted to connect to targets by this rule
+          e.g.:
+            - 10.100.101.0/24
+            - a-tag
+      target_tags:
+        description: >
+          List of target tags this rule should apply to. If no tags are
+          specified, it will apply to all instances in the network
+        default: []
       gcp_config:
         description: >
           A dictionary of values to pass to authenticate with the Google Cloud Platform API.
@@ -240,26 +260,20 @@ node_types:
         create:
           implementation: gcp_plugin.cloudify_gcp.compute.firewall.create
           inputs:
-            firewall_rule:
-              default: {}
             name:
               default: { get_property: [SELF, name] }
+            allowed:
+              default: { get_property: [SELF, allowed] }
+            sources:
+              default: { get_property: [SELF, sources] }
+            target_tags:
+              default: { get_property: [SELF, target_tags] }
         delete:
           implementation: gcp_plugin.cloudify_gcp.compute.firewall.delete
 
   cloudify.gcp.nodes.SecurityGroup:
     derived_from: cloudify.nodes.SecurityGroup
     properties:
-      use_external_resource:
-        description: >
-          Indicate whether the resource exists or if Cloudify should create the resource.
-        type: boolean
-        default: false
-      resource_id:
-        description: >
-          If "use_external_resource" is set to true, this field will be used as a name
-          of existing security group that is referenced by this node.
-        default: ''
       name:
         description: >
           Optional security group name. By default it will be network name
@@ -267,8 +281,9 @@ node_types:
         default: ''
       rules:
         description: >
-          You need to pass in either source_tags list OR cidr_ip list,
-          and then the following two: ip_protocol and port list OR target_tags list.
+          List of FirewallRules which will form this SecurityGroup.
+          Only the `sources:` and `allowed:` fields should be supplied
+          (see FirewallRule properties for details).
         default: []
       gcp_config:
         description: >
@@ -283,7 +298,9 @@ node_types:
               default: { get_property: [SELF, rules] }
             name:
               default: { get_property: [SELF, name] }
-        delete:          
+        configure:
+          implementation: gcp_plugin.cloudify_gcp.compute.firewall.configure_security_group
+        delete:
           implementation: gcp_plugin.cloudify_gcp.compute.firewall.delete_security_group
 
   cloudify.gcp.nodes.KeyPair:
@@ -827,14 +844,14 @@ relationships:
             instance_name: 
               default: { get_attribute: [SOURCE, gcp_name] }
             tag:
-              default: { get_attribute: [TARGET, targetTags] }
+              default: [{ get_attribute: [TARGET, name] }]
         unlink:
           implementation: gcp_plugin.cloudify_gcp.compute.instance.remove_instance_tag
           inputs:
             instance_name: 
               default: { get_attribute: [SOURCE, gcp_name] }
             tag:
-              default: { get_attribute: [TARGET, targetTags] }
+              default: [{ get_attribute: [TARGET, name] }]
 
   cloudify.gcp.relationships.instance_connected_to_ip:
     derived_from: cloudify.relationships.connected_to
@@ -939,6 +956,8 @@ relationships:
         create:
           implementation: gcp_plugin.cloudify_gcp.dns.record.validate_contained_in
 
-
   cloudify.gcp.relationships.dns_record_connected_to_instance:
     derived_from: cloudify.relationships.connected_to
+
+  cloudify.gcp.relationships.contained_in_network:
+    derived_from: cloudify.relationships.contained_in
