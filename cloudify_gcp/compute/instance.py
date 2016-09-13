@@ -18,7 +18,6 @@ from os.path import basename
 
 from cloudify import ctx
 from cloudify.decorators import operation
-from cloudify.context import CloudifyContext
 from cloudify.exceptions import NonRecoverableError
 
 from .. import utils
@@ -325,7 +324,9 @@ def create(instance_type,
            tags,
            zone=None,
            **kwargs):
+    props = ctx.instance.runtime_properties
     gcp_config = utils.get_gcp_config()
+
     script = ''
     if not startup_script:
         startup_script = ctx.instance.runtime_properties.get('startup_script')
@@ -337,61 +338,50 @@ def create(instance_type,
         script = startup_script.get('script')
     ssh_keys = get_ssh_keys()
 
-    network = subnetwork = None
-    network_list = utils.get_relationships(
-            ctx,
-            filter_relationships='cloudify.gcp.relationships.'
-                                 'instance_contained_in_network',
-            )
-    if len(network_list) > 0:
-        net_node = network_list[0].target
-        if net_node.node.type == 'cloudify.gcp.nodes.Network':
-            network = net_node.instance.runtime_properties['selfLink']
-        elif net_node.node.type == 'cloudify.gcp.nodes.SubNetwork':
-            network = net_node.instance.runtime_properties['network']
-            subnetwork = net_node.instance.runtime_properties['selfLink']
-        else:
-            raise NonRecoverableError(
-                'Unsupported target type for '
-                "'cloudify.gcp.relationships.instance_contained_in_network")
-    else:
-        network = utils.get_gcp_resource_name(gcp_config['network'])
+    network, subnetwork = utils.get_net_and_subnet(ctx)
 
-    if not zone:
-        if subnetwork:
-            zone = random.choice(constants.REGION_ZONES_FULL[
-                basename(net_node.instance.runtime_properties['region'])])
+    if zone:
+        zone = props['zone'] = utils.get_gcp_resource_name(zone)
+    else:
+        if props.get('zone', False):
+            zone = props['zone']
+        elif subnetwork:
+            zone = props['zone'] = random.choice(constants.REGION_ZONES_FULL[
+                basename(utils.get_network_node(ctx)
+                         .instance.runtime_properties['region'])])
         else:
-            zone = utils.get_gcp_resource_name(gcp_config['zone'])
+            zone = props['zone'] = utils.get_gcp_resource_name(
+                    gcp_config['zone'])
 
     instance_name = utils.get_final_resource_name(name)
-    instance = Instance(gcp_config,
-                        ctx.logger,
-                        name=instance_name,
-                        image=image_id,
-                        machine_type=instance_type,
-                        external_ip=external_ip,
-                        startup_script=script,
-                        scopes=scopes,
-                        tags=tags,
-                        ssh_keys=ssh_keys,
-                        network=network,
-                        subnetwork=subnetwork,
-                        zone=zone,
-                        )
+    instance = Instance(
+            gcp_config,
+            ctx.logger,
+            name=instance_name,
+            image=image_id,
+            machine_type=instance_type,
+            external_ip=external_ip,
+            startup_script=script,
+            scopes=scopes,
+            tags=tags,
+            ssh_keys=ssh_keys,
+            network=network,
+            subnetwork=subnetwork,
+            zone=zone,
+            )
     if not utils.is_manager_instance():
         add_to_security_groups(instance)
-    disk = ctx.instance.runtime_properties.get(constants.DISK)
+    disk = props.get(constants.DISK)
     if disk:
         instance.disks = [disk]
     if not instance.disks and not instance.image:
         raise NonRecoverableError("A disk image ID must be provided")
 
     if utils.async_operation():
-        ctx.instance.runtime_properties.update(instance.get())
+        props.update(instance.get())
     else:
         response = utils.create(instance)
-        ctx.instance.runtime_properties['_operation'] = response
+        props['_operation'] = response
         ctx.operation.retry(
                 'Instance creation started',
                 constants.RETRY_DEFAULT_DELAY)
@@ -411,60 +401,66 @@ def start(**kwargs):
 
 
 @operation
+@utils.retry_on_failure('Retrying deleting instance')
 @utils.throw_cloudify_exceptions
-def delete(name, **kwargs):
+def delete(name, zone, **kwargs):
     gcp_config = utils.get_gcp_config()
     props = ctx.instance.runtime_properties
-    if props.get('name', None):
-        name = props['name']
-    else:
-        name = utils.get_final_resource_name(name)
+    name = utils.get_final_resource_name(name)
     instance = Instance(gcp_config,
                         ctx.logger,
                         name=name,
-                        zone=basename(props['zone']),
+                        zone=zone,
                         )
+    props.pop(constants.DISK, None)
     if not utils.async_operation():
         response = utils.delete_if_not_external(instance)
-        ctx.instance.runtime_properties['_operation'] = response
+        props['_operation'] = response
         ctx.operation.retry('Instance is not yet deleted. Retrying:',
                             constants.RETRY_DEFAULT_DELAY)
 
 
 @operation
 @utils.throw_cloudify_exceptions
-def add_instance_tag(instance_name, tag, **kwargs):
+def add_instance_tag(instance_name, zone, tag, **kwargs):
     if tag:
         config = utils.get_gcp_config()
         config['network'] = utils.get_gcp_resource_name(config['network'])
         instance = Instance(config,
                             ctx.logger,
-                            name=instance_name)
+                            name=instance_name,
+                            zone=zone,
+                            )
         instance.set_tags([utils.get_gcp_resource_name(t) for t in tag])
 
 
 @operation
 @utils.throw_cloudify_exceptions
-def remove_instance_tag(instance_name, tag, **kwargs):
+def remove_instance_tag(instance_name, zone, tag, **kwargs):
     config = utils.get_gcp_config()
     if instance_name:
         config['network'] = utils.get_gcp_resource_name(config['network'])
         instance = Instance(config,
                             ctx.logger,
-                            name=instance_name)
+                            name=instance_name,
+                            zone=zone,
+                            )
         instance.remove_tags([utils.get_gcp_resource_name(t) for t in tag])
 
 
 @operation
 @utils.throw_cloudify_exceptions
-def add_external_ip(instance_name, **kwargs):
+def add_external_ip(instance_name, zone, **kwargs):
     gcp_config = utils.get_gcp_config()
     # check if the instance has no external ips, only one is supported so far
     gcp_config['network'] = utils.get_gcp_resource_name(gcp_config['network'])
     ip_node = ctx.target.node
-    instance = Instance(gcp_config,
-                        ctx.logger,
-                        name=instance_name)
+    instance = Instance(
+            gcp_config,
+            ctx.logger,
+            name=instance_name,
+            zone=zone,
+            )
     if ip_node.properties[constants.USE_EXTERNAL_RESOURCE]:
         ip_address = (
                 ip_node.properties.get('ip_address') or
@@ -495,34 +491,40 @@ def add_ssh_key(**kwargs):
 
 @operation
 @utils.throw_cloudify_exceptions
-def remove_external_ip(instance_name, **kwargs):
+def remove_external_ip(instance_name, zone, **kwargs):
     if instance_name:
         gcp_config = utils.get_gcp_config()
         gcp_config['network'] = utils.get_gcp_resource_name(
                 gcp_config['network'])
         instance = Instance(gcp_config,
                             ctx.logger,
-                            name=instance_name)
+                            name=instance_name,
+                            zone=zone,
+                            )
         instance.delete_access_config()
 
 
 @operation
 @utils.throw_cloudify_exceptions
-def attach_disk(instance_name, disk, **kwargs):
+def attach_disk(instance_name, zone, disk, **kwargs):
     gcp_config = utils.get_gcp_config()
     instance = Instance(gcp_config,
                         ctx.logger,
-                        name=instance_name)
+                        name=instance_name,
+                        zone=zone,
+                        )
     instance.attach_disk(disk)
 
 
 @operation
 @utils.throw_cloudify_exceptions
-def detach_disk(instance_name, disk_name, **kwargs):
+def detach_disk(instance_name, zone, disk_name, **kwargs):
     gcp_config = utils.get_gcp_config()
     instance = Instance(gcp_config,
                         ctx.logger,
-                        name=instance_name)
+                        name=instance_name,
+                        zone=zone,
+                        )
     instance.detach_disk(disk_name)
 
 

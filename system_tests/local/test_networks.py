@@ -19,14 +19,27 @@ from . import GCPTest
 
 
 class GCPSimpleNetworkTest(GCPTest, TestCase):
-    blueprint_name = 'simple-blueprint.yaml'
+    blueprint_name = 'networks/simple-blueprint.yaml'
+
+    inputs = {
+            'gcp_auth',
+            'project',
+            'network',
+            'zone',
+            }
 
     def assertions(self):
         pass
 
 
 class GCPNetAndSubnetTest(GCPTest, TestCase):
-    blueprint_name = 'net-and-subnet-blueprint.yaml'
+    blueprint_name = 'networks/net-and-subnet-blueprint.yaml'
+
+    inputs = {
+            'gcp_auth',
+            'project',
+            'zone',
+            }
 
     def assertions(self):
 

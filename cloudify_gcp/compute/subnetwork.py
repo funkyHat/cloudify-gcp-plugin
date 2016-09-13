@@ -129,7 +129,7 @@ def create(name, region, subnet, **kwargs):
     network = utils.get_relationships(
             ctx,
             filter_relationships='cloudify.gcp.relationships'
-                                 '.subnet_contained_in_network'
+                                 '.contained_in_network'
             )[0].target.instance
     subnetwork = SubNetwork(
             gcp_config,
@@ -169,7 +169,7 @@ def delete(**kwargs):
 
 
 def creation_validation(ctx, **kwargs):
-    types = ('cloudify.gcp.relationships.subnet_contained_in_network',
+    types = ('cloudify.gcp.relationships.contained_in_network',
              'cloudify.gcp.nodes.Network')
     rels = utils.get_relationships(ctx, *types)
     if len(rels) != 1:

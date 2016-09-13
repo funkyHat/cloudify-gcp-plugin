@@ -18,6 +18,7 @@ import unittest
 from mock import Mock
 
 from cloudify.state import current_ctx
+from cloudify.manager import DirtyTrackingDict
 
 
 class TestGCP(unittest.TestCase):
@@ -39,7 +40,7 @@ class TestGCP(unittest.TestCase):
                 'project': 'not really a project',
                 },
             }
-        ctx.instance.runtime_properties = {}
+        ctx.instance.runtime_properties = DirtyTrackingDict()
         ctx.provider_context = {
             'resources': {
                 'cloudify_agent': {

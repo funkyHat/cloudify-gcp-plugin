@@ -8,13 +8,9 @@ imports:
 
 inputs:
   gcp_auth:
-    required: true
   project:
-    required: true
   zone:
-    required: true
   network:
-    required: true
 
 
 dsl_definitions:
@@ -39,19 +35,17 @@ node_types:
 
 
 node_templates:
-  instance:
-    type: Instance
 
   instance_2:
     type: Instance
     relationships:
-      - type: cloudify.gcp.relationships.instance_contained_in_network
+      - type: cloudify.gcp.relationships.contained_in_network
         target: network_2
 
   instance_3:
     type: Instance
     relationships:
-      - type: cloudify.gcp.relationships.instance_contained_in_network
+      - type: cloudify.gcp.relationships.contained_in_network
         target: subnet_a
 
   network:
@@ -73,7 +67,7 @@ node_templates:
       subnet: 10.11.12.0/22
       gcp_config: *gcp_config
     relationships:
-      - type: cloudify.gcp.relationships.subnet_contained_in_network
+      - type: cloudify.gcp.relationships.contained_in_network
         target: network
 
 

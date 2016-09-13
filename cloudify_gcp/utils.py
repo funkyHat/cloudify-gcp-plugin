@@ -22,8 +22,8 @@ from abc import ABCMeta, abstractmethod
 from copy import deepcopy
 from functools import wraps
 
-from googleapiclient.errors import HttpError
 from proxy_tools import Proxy
+from googleapiclient.errors import HttpError
 
 from cloudify import ctx
 from cloudify.context import CloudifyContext
@@ -192,18 +192,6 @@ def retry_on_failure(msg, delay=constants.RETRY_DEFAULT_DELAY):
     return _retry_on_failure
 
 
-def get_firewall_rule_name(network, firewall):
-    """
-    Prefix firewall rule name with network name
-
-    :param network: network to which the firewall rule belongs
-    :param firewall: firewall for which the name is created
-    :return: network prefixed firewall rule name
-    """
-    name = '{0}-{1}'.format(network, firewall)
-    return get_gcp_resource_name(name)
-
-
 def throw_cloudify_exceptions(func):
     def _decorator(*args, **kwargs):
         try:
@@ -262,32 +250,6 @@ def get_manager_provider_config():
         'manager_security_group': manager_agent_security_group
     }
     return provider_context
-
-
-def create_firewall_structure_from_rules(network, rules):
-    firewall = {'name': get_firewall_rule_name(network, ctx.instance.id),
-                'allowed': [],
-                constants.SOURCE_TAGS: [],
-                'sourceRanges': [],
-                constants.TARGET_TAGS: []}
-
-    for rule in rules:
-        source_tags = rule.get('source_tags', [])
-        target_tags = rule.get('target_tags', [])
-        for tag in source_tags:
-            tag = get_gcp_resource_name(tag)
-            if tag not in firewall[constants.SOURCE_TAGS]:
-                firewall[constants.SOURCE_TAGS].append(tag)
-        for tag in target_tags:
-            tag = get_gcp_resource_name(tag)
-            if tag not in firewall[constants.TARGET_TAGS]:
-                firewall[constants.TARGET_TAGS].append(tag)
-        firewall['allowed'].extend([{'IPProtocol': rule.get('ip_protocol'),
-                                     'ports': [rule.get('port', [])]}])
-        cidr = rule.get('cidr_ip')
-        if cidr and cidr not in firewall['sourceRanges']:
-            firewall['sourceRanges'].append(cidr)
-    return firewall
 
 
 def is_object_deleted(obj):
@@ -410,6 +372,47 @@ def get_relationships(
         if rel:
             results.append(rel)
     return results
+
+
+def get_network_node(ctx):
+    network_list = get_relationships(
+            ctx,
+            filter_relationships='cloudify.gcp.relationships.'
+                                 'contained_in_network',
+            )
+    if len(network_list) > 0:
+        return network_list[0].target
+
+
+def get_net_and_subnet(ctx):
+    """
+    Returns a tuple of the ctx node's
+    (Network, Subnetwork)
+    """
+    net_node = get_network_node(ctx)
+
+    subnetwork = None
+    if net_node:
+        if net_node.node.type == 'cloudify.gcp.nodes.Network':
+            network = net_node.instance.runtime_properties['selfLink']
+        elif net_node.node.type == 'cloudify.gcp.nodes.SubNetwork':
+            network = net_node.instance.runtime_properties['network']
+            subnetwork = net_node.instance.runtime_properties['selfLink']
+        else:
+            raise NonRecoverableError(
+                'Unsupported target type for '
+                "'cloudify.gcp.relationships.instance_contained_in_network")
+    else:
+        network = get_gcp_config()['network']
+
+    if network == 'default':
+        network = 'global/networks/default'
+
+    return network, subnetwork
+
+
+def get_network(ctx):
+    return get_net_and_subnet(ctx)[0]
 
 
 def nonrecoverable_errors(fun):

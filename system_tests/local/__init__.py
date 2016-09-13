@@ -13,8 +13,9 @@
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 
-from copy import copy
 import os
+from copy import copy
+from abc import ABCMeta, abstractmethod, abstractproperty
 
 from cloudify.workflows import local
 from cloudify_cli import constants as cli_constants
@@ -34,25 +35,30 @@ def tearDown():
 
 
 class GCPTest(object):
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def assertions(self):
+        """This will be called after the deployment is finished.
+        The deployment is uninstalled during test teardown"""
+
+    @abstractproperty
+    def inputs(self):
+        """The list of inputs which should be copied from the provider context
+        inputs to the deployment inputs for `blueprint`"""
 
     def setUp(self):
         super(GCPTest, self).setUp()
 
         self.ext_inputs = {
                 k: self.env.cloudify_config[k]
-                for k in (
-                    'gcp_auth',
-                    'project',
-                    'zone',
-                    'network',
-                )}
+                for k in self.inputs}
 
         blueprints_path = os.path.split(os.path.abspath(__file__))[0]
         blueprints_path = os.path.split(blueprints_path)[0]
         self.blueprints_path = os.path.join(
             blueprints_path,
             'resources',
-            'networks'
         )
 
     def test_blueprint(self):
@@ -90,5 +96,4 @@ class GCPTest(object):
 
         self.assertions()
 
-    def assertions(self):
-        pass
+        print('test_blueprint succeded')

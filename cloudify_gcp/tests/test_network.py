@@ -24,23 +24,26 @@ from . import TestGCP
 class TestGCPNetwork(TestGCP):
 
     def test_create(self, mock_build, *args):
-        network.create({
-            'name': 'network-name',
-            })
+        network.create(
+                name='network-name',
+                auto_subnets=True,
+                )
 
         mock_build().networks().insert.assert_called_once_with(
                 body={
                     'description': 'Cloudify generated network',
-                    'name': 'network-name'},
+                    'name': 'network-name',
+                    'autoCreateSubnetworks': True,
+                    },
                 project='not really a project',
                 )
 
     def test_delete(self, mock_build, *args):
         self.ctxmock.instance.runtime_properties = {
-                'gcp_name': 'hi',
+                'name': 'hi',
                 }
 
-        network.delete()
+        network.delete('name')
 
         mock_build().networks().delete.assert_called_once_with(
                 network='hi',

@@ -131,7 +131,7 @@ def create(name, auto_subnets, **kwargs):
 
 @operation
 @utils.throw_cloudify_exceptions
-def delete(name, **kwargs):
+def delete(name=None, **kwargs):
     gcp_config = utils.get_gcp_config()
     props = ctx.instance.runtime_properties
 

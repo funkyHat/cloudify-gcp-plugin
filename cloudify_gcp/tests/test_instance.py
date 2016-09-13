@@ -23,22 +23,28 @@ from cloudify_gcp.compute import instance
 from . import TestGCP
 
 
-@patch('cloudify_gcp.utils.assure_resource_id_correct', return_value=True)
 @patch('cloudify_gcp.gcp.ServiceAccountCredentials.from_json_keyfile_dict')
-@patch('cloudify_gcp.utils.get_gcp_resource_name', return_value='valid_name')
 @patch('cloudify_gcp.gcp.build')
 class TestGCPInstance(TestGCP):
+
+    def setUp(self):
+        super(TestGCPInstance, self).setUp()
+        self.ctxmock.instance.runtime_properties['zone'] = 'a very fake zone'
+        self.ctxmock.source.instance.runtime_properties = {
+                'zone': 'a very fake zone',
+                }
 
     def test_create(self, mock_build, *args):
         self.ctxmock.instance.runtime_properties = {
                 'startup_script': {'type': 'string'},
                 }
+        self.ctxmock.instance.relationships = []
 
         instance.create(
                 'instance_type',
                 'image_id',
                 'name',
-                'zone',
+                zone='zone',
                 external_ip=False,
                 startup_script=None,
                 scopes='scopes',
@@ -52,8 +58,8 @@ class TestGCPInstance(TestGCP):
         mock_build().instances().insert.assert_called_with(
                 body={
                     'machineType': 'zones/zone/machineTypes/instance_type',
-                    'name': 'valid_name',
-                    'tags': {'items': ['tags', 'valid_name']},
+                    'name': 'name',
+                    'tags': {'items': ['name', 'tags']},
                     'description': 'Cloudify generated instance',
                     'disks': [{
                         'initializeParams': {'sourceImage': 'image_id'},
@@ -66,7 +72,7 @@ class TestGCPInstance(TestGCP):
                             {'value': 'not really a project', 'key': 'bucket'},
                             {'value': 'Fakey McFakeface', 'key': 'sshKeys'}]},
                     'networkInterfaces': [{
-                        'network': 'global/networks/valid_name'}]
+                        'network': 'not a real network'}]
                     },
                 project='not really a project',
                 zone='zone'
@@ -74,10 +80,37 @@ class TestGCPInstance(TestGCP):
 
         self.assertEqual(
                 {
-                    'gcp_zone': 'zone',
-                    'gcp_name': 'valid_name',
+                    'zone': 'zone',
                     'startup_script': {'type': 'string'},
+                    '_operation': mock_build().instances().insert().execute(),
                  },
+                self.ctxmock.instance.runtime_properties
+                )
+
+        mock_build().instances().get().execute.return_value = {
+                'you pass': 'the test',
+                }
+        mock_build().globalOperations().get().execute.return_value = {
+                'status': 'DONE',
+                }
+
+        instance.create(
+                'instance_type',
+                'image_id',
+                'name',
+                zone='zone',
+                external_ip=False,
+                startup_script=None,
+                scopes='scopes',
+                tags=['tags'],
+                )
+
+        self.assertEqual(
+                {
+                    'startup_script': {'type': 'string'},
+                    'you pass': 'the test',
+                    'zone': 'zone',
+                    },
                 self.ctxmock.instance.runtime_properties
                 )
 
@@ -85,12 +118,13 @@ class TestGCPInstance(TestGCP):
         self.ctxmock.instance.runtime_properties = {
                 'gcp_disk': '💾',
                 }
+        self.ctxmock.instance.relationships = []
 
         instance.create(
                 'instance_type',
                 'image_id',
                 'name',
-                'zone',
+                zone='zone',
                 external_ip=False,
                 startup_script=None,
                 scopes='scopes',
@@ -102,8 +136,8 @@ class TestGCPInstance(TestGCP):
         mock_build().instances().insert.assert_called_with(
                 body={
                     'machineType': 'zones/zone/machineTypes/instance_type',
-                    'name': 'valid_name',
-                    'tags': {'items': ['tags', 'valid_name']},
+                    'name': 'name',
+                    'tags': {'items': ['name', 'tags']},
                     'description': 'Cloudify generated instance',
                     'disks': ['💾'],
                     'serviceAccounts': [{
@@ -114,7 +148,7 @@ class TestGCPInstance(TestGCP):
                             {'value': 'not really a project', 'key': 'bucket'},
                             {'value': 'Fakey McFakeface', 'key': 'sshKeys'}]},
                     'networkInterfaces': [{
-                        'network': 'global/networks/valid_name'}]
+                        'network': 'not a real network'}]
                     },
                 project='not really a project',
                 zone='zone'
@@ -123,37 +157,43 @@ class TestGCPInstance(TestGCP):
     @patch('cloudify_gcp.utils.get_item_from_gcp_response',
            return_value={'networkInterfaces': [{'networkIP': 'a'}]})
     def test_start(self, mock_getitem, mock_build, *args):
-        instance.start('name')
+        self.ctxmock.instance.runtime_properties['name'] = 'name'
+        instance.start()
 
         self.assertEqual(
                 self.ctxmock.instance.runtime_properties['ip'],
                 'a')
 
     def test_delete(self, mock_build, *args):
-        self.ctxmock.instance.runtime_properties['gcp_name'] = 'delete_name'
-        instance.delete()
+        instance.delete('delete-name', 'a very fake zone')
 
         mock_build.assert_called_once()
         mock_build().instances().delete.assert_called_with(
-                instance='valid_name',
+                instance='delete-name',
                 project='not really a project',
                 zone='a very fake zone')
 
     @patch('cloudify_gcp.utils.is_object_deleted', return_value=True)
     def test_delete_deleted(self, mock_is_deleted, mock_build, *args):
+        _op = {
+                'status': 'DONE',
+                'name': 'op_name',
+                }
         self.ctxmock.instance.runtime_properties = {
                 'gcp_disk': 'hi',
-                'gcp_name': 'hello',
-                'gcp_zone': 'hey',
+                'name': 'delete-name',
+                'zone': 'hey',
                 'another': 'yo',
+                '_operation': _op,
                 }
+        mock_build().globalOperations().get().execute.return_value = _op
 
-        instance.delete()
+        instance.delete('delete-name', 'zone')
 
         self.assertFalse(mock_build().instances().delete.called)
 
         self.assertEqual(
-                {'another': 'yo'},
+                {'another': 'yo', 'zone': 'hey'},
                 self.ctxmock.instance.runtime_properties)
 
     def test_add_external_ip(self, mock_build, *args):
@@ -161,14 +201,14 @@ class TestGCPInstance(TestGCP):
                 'use_external_resource': False,
                 }
 
-        instance.add_external_ip('instance_name')
+        instance.add_external_ip('instance_name', 'a very fake zone')
 
         mock_build().instances().addAccessConfig.assert_called_once_with(
                 body={
                     'kind': 'compute#accessConfig',
                     'type': 'ONE_TO_ONE_NAT',
                     'name': 'External NAT'},
-                instance='valid_name',
+                instance='instance-name',
                 networkInterface='nic0',
                 project='not really a project',
                 zone='a very fake zone')
@@ -181,7 +221,7 @@ class TestGCPInstance(TestGCP):
                 'gcp_ip': "1.2.3.4",
                 }
 
-        instance.add_external_ip('instance_name')
+        instance.add_external_ip('instance_name', 'zone')
 
         mock_build().instances().addAccessConfig.assert_called_once_with(
                 body={
@@ -189,49 +229,53 @@ class TestGCPInstance(TestGCP):
                     'kind': 'compute#accessConfig',
                     'type': 'ONE_TO_ONE_NAT',
                     'name': 'External NAT'},
-                instance='valid_name',
+                instance='instance-name',
                 networkInterface='nic0',
                 project='not really a project',
-                zone='a very fake zone')
+                zone='zone')
 
     def test_add_external_external_ip_raises(self, mock_build, *args):
         self.ctxmock.target.node.properties = {
                 'use_external_resource': True,
                 }
+        self.ctxmock.source.instance.runtime_properties = {
+                'zone': 'zone',
+                }
         self.ctxmock.target.instance.runtime_properties = {}
 
         with self.assertRaises(NonRecoverableError):
-            instance.add_external_ip('instance_name')
+            instance.add_external_ip('instance_name', 'zone')
 
     def test_remove_external_ip(self, mock_build, *args):
-        instance.remove_external_ip('instance_name')
+
+        instance.remove_external_ip('instance_name', 'a very fake zone')
 
         mock_build().instances().deleteAccessConfig.assert_called_once_with(
                 accessConfig='External NAT',
-                instance='valid_name',
+                instance='instance-name',
                 networkInterface='nic0',
                 project='not really a project',
                 zone='a very fake zone',
                 )
 
     def test_attach_disk(self, mock_build, *args):
-        instance.attach_disk('instance', 'disk')
+        instance.attach_disk('instance', 'zone', 'disk')
 
         mock_build().instances().attachDisk.assert_called_once_with(
                 body='disk',
-                instance='valid_name',
+                instance='instance',
                 project='not really a project',
-                zone='a very fake zone'
+                zone='zone'
                 )
 
     def test_detach_disk(self, mock_build, *args):
-        instance.detach_disk('instance', 'disk')
+        instance.detach_disk('instance', 'zone', 'disk')
 
         mock_build().instances().detachDisk.assert_called_once_with(
                 deviceName='disk',
-                instance='valid_name',
+                instance='instance',
                 project='not really a project',
-                zone='a very fake zone',
+                zone='zone',
                 )
 
     def test_add_ssh_key(self, mock_build, *args):
@@ -253,20 +297,25 @@ class TestGCPInstance(TestGCP):
                     'items': ['a', 'b', 'c'],
                     'fingerprint': u'🖐'}}
 
-        instance.add_instance_tag('instance', ['a tag'])
+        instance.add_instance_tag('instance', 'zone', ['a tag'])
 
         # Something weird happens so we can't be sure of the order of tags
         mock_build().instances().setTags.call_args[1]['body']['items'].sort()
         mock_build().instances().setTags.assert_called_once_with(
             body={
-                'items': ['a', 'b', 'c', 'valid_name'],
+                'items': ['a', 'atag', 'b', 'c'],
                 'fingerprint': u'🖐'},
             project='not really a project',
-            instance='valid_name',
-            zone='a very fake zone'
+            instance='instance',
+            zone='zone'
             )
 
-    def test_remove_instance_tag(self, mock_build, mock_get_res, *args):
+    @patch('cloudify_gcp.utils.get_gcp_resource_name',
+           return_value='valid_name')
+    def test_remove_instance_tag(self, mock_get_res, mock_build, *args):
+        self.ctxmock.source.instance.runtime_properties = {
+                'zone': 'zone',
+                }
         mock_build().instances().get().execute.return_value = {
                 'tags': {
                     'items': ['a tag', 'another tag'],
@@ -274,7 +323,7 @@ class TestGCPInstance(TestGCP):
 
         mock_get_res.side_effect = lambda x: x
 
-        instance.remove_instance_tag('instance', ['a tag'])
+        instance.remove_instance_tag('instance', 'zone', ['a tag'])
 
         mock_build().instances().setTags.assert_called_once_with(
             body={
@@ -282,7 +331,7 @@ class TestGCPInstance(TestGCP):
                 'fingerprint': u'🖐'},
             project='not really a project',
             instance='instance',
-            zone='a very fake zone'
+            zone='zone'
             )
 
     def test_contained_in(self, *args):
