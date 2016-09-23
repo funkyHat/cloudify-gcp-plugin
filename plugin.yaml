@@ -43,10 +43,6 @@ node_types:
           https://cloud.google.com/compute/docs/machine-types
         type: string
         default: n1-standard-1
-      instance_additional_settings:
-        description: >
-          Additional instance settings.
-        default: {}
       name:
         description: >
           Optional instance name. By default it will be instance id.
@@ -64,6 +60,16 @@ node_types:
           its name.
         type: string
         default: ''
+      block_project_ssh_keys:
+        description: >
+          Disable project-wide ssh keys for this Instance
+        type: boolean
+        default: false
+      can_ip_forward:
+        description: >
+          Is the VM allowed to send packets with source address different to its own?
+        type: boolean
+        default: false
       scopes:
         description: >
           Optional scopes. If not will set by default: 
@@ -93,6 +99,8 @@ node_types:
               default: { get_property: [SELF, scopes] }
             tags:
               default: { get_property: [SELF, tags]}
+            can_ip_forward:
+              default: { get_property: [SELF, can_ip_forward]}
         start:
           implementation: gcp_plugin.cloudify_gcp.compute.instance.start
           inputs:
@@ -947,7 +955,7 @@ relationships:
           implementation: gcp_plugin.cloudify_gcp.compute.instance.add_ssh_key
           inputs:
             instance_name:
-              default: { get_attribute: [SOURCE, gcp_name] }
+              default: { get_attribute: [SOURCE, name] }
 
   cloudify.gcp.relationships.file_system_contained_in_compute:
     derived_from: cloudify.relationships.contained_in
@@ -977,7 +985,7 @@ relationships:
             zone:
               default: { get_attribute: [TARGET, zone] }
             disk_name: 
-              default: { get_attribute: [SOURCE, gcp_name] }
+              default: { get_attribute: [SOURCE, name] }
 
   cloudify.gcp.relationships.instance_connected_to_instance_group:
     derived_from: cloudify.relationships.connected_to
@@ -989,14 +997,14 @@ relationships:
             instance_group_name:
               default: { get_attribute: [TARGET, gcp_name] }
             instance_name:
-              default: { get_attribute: [SOURCE, gcp_name] }
+              default: { get_attribute: [SOURCE, name] }
         unlink:
           implementation: gcp_plugin.cloudify_gcp.compute.instance_group.remove_from_instance_group
           inputs:
             instance_group_name:
               default: { get_attribute: [TARGET, gcp_name] }
             instance_name:
-              default: { get_attribute: [SOURCE, gcp_name] }
+              default: { get_attribute: [SOURCE, name] }
 
   cloudify.gcp.relationships.uses_as_backend:
     derived_from: cloudify.relationships.connected_to

@@ -52,6 +52,7 @@ class Instance(GoogleCloudPlatform):
                  network=None,
                  subnetwork=None,
                  zone=None,
+                 can_ip_forward=False,
                  ):
         """
         Create Instance object
@@ -81,6 +82,7 @@ class Instance(GoogleCloudPlatform):
         self.zone = zone
         self.network = network
         self.subnetwork = subnetwork
+        self.can_ip_forward = can_ip_forward
 
     @check_response
     def create(self):
@@ -276,6 +278,7 @@ class Instance(GoogleCloudPlatform):
         body = {
             'name': self.name,
             'description': 'Cloudify generated instance',
+            'canIpForward': self.can_ip_forward,
             'tags': {'items': list(set(self.tags))},
             'machineType': 'zones/{0}/machineTypes/{1}'.format(
                 basename(self.zone),
@@ -323,6 +326,7 @@ def create(instance_type,
            scopes,
            tags,
            zone=None,
+           can_ip_forward=False,
            **kwargs):
     props = ctx.instance.runtime_properties
     gcp_config = utils.get_gcp_config()
@@ -368,6 +372,7 @@ def create(instance_type,
             network=network,
             subnetwork=subnetwork,
             zone=zone,
+            can_ip_forward=can_ip_forward,
             )
     if not utils.is_manager_instance():
         add_to_security_groups(instance)
@@ -406,13 +411,17 @@ def start(**kwargs):
 def delete(name, zone, **kwargs):
     gcp_config = utils.get_gcp_config()
     props = ctx.instance.runtime_properties
+    if not name and props.get('name', None):
+        name = props['name']
     name = utils.get_final_resource_name(name)
+
     instance = Instance(gcp_config,
                         ctx.logger,
                         name=name,
                         zone=zone,
                         )
     props.pop(constants.DISK, None)
+
     if not utils.async_operation():
         response = utils.delete_if_not_external(instance)
         props['_operation'] = response
@@ -455,12 +464,18 @@ def add_external_ip(instance_name, zone, **kwargs):
     # check if the instance has no external ips, only one is supported so far
     gcp_config['network'] = utils.get_gcp_resource_name(gcp_config['network'])
     ip_node = ctx.target.node
+
+    # Might be overridden by either `use_external_resource` or a connected
+    # StaticIP
+    ip_address = ''
+
     instance = Instance(
             gcp_config,
             ctx.logger,
             name=instance_name,
             zone=zone,
             )
+
     if ip_node.properties[constants.USE_EXTERNAL_RESOURCE]:
         ip_address = (
                 ip_node.properties.get('ip_address') or
@@ -469,9 +484,10 @@ def add_external_ip(instance_name, zone, **kwargs):
         if not ip_address:
             raise GCPError('{} is set, but ip_address is not set'
                            .format(constants.USE_EXTERNAL_RESOURCE))
-        instance.add_access_config(ip_address)
-    else:
-        instance.add_access_config()
+    elif ip_node.type == 'cloudify.gcp.nodes.StaticIP':
+        ip_address = ctx.target.instance.runtime_properties['address']
+
+    instance.add_access_config(ip_address)
     set_ip(instance, relationship=True)
 
 
@@ -537,17 +553,23 @@ def contained_in(**kwargs):
 
 
 def set_ip(instance, relationship=False):
+    if relationship:
+        props = ctx.source.instance.runtime_properties
+    else:
+        props = ctx.instance.runtime_properties
+
     instances = instance.list()
     item = utils.get_item_from_gcp_response('name',
                                             instance.name,
                                             instances)
+
     try:
         if relationship:
-            ctx.target.instance.runtime_properties['ip'] = \
-                item['networkInterfaces'][0]['accessConfigs'][0]['natIP']
+            props.update(item)
+            props['ip'] = item[
+                    'networkInterfaces'][0]['accessConfigs'][0]['natIP']
         else:
-            ctx.instance.runtime_properties['ip'] = \
-                item['networkInterfaces'][0]['networkIP']
+            props['ip'] = item['networkInterfaces'][0]['networkIP']
         # only with one default network interface
     except (TypeError, KeyError):
         ctx.operation.retry(

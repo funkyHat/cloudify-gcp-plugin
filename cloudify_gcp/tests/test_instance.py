@@ -72,7 +72,8 @@ class TestGCPInstance(TestGCP):
                             {'value': 'not really a project', 'key': 'bucket'},
                             {'value': 'Fakey McFakeface', 'key': 'sshKeys'}]},
                     'networkInterfaces': [{
-                        'network': 'not a real network'}]
+                        'network': 'not a real network'}],
+                    'canIpForward': False,
                     },
                 project='not really a project',
                 zone='zone'
@@ -148,7 +149,8 @@ class TestGCPInstance(TestGCP):
                             {'value': 'not really a project', 'key': 'bucket'},
                             {'value': 'Fakey McFakeface', 'key': 'sshKeys'}]},
                     'networkInterfaces': [{
-                        'network': 'not a real network'}]
+                        'network': 'not a real network'}],
+                    'canIpForward': False,
                     },
                 project='not really a project',
                 zone='zone'

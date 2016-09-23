@@ -37,6 +37,26 @@ class GCPInstanceTest(GCPTest, TestCase):
                 )
 
 
+class GCPEphemeralIPTest(GCPTest, TestCase):
+    blueprint_name = 'compute/external-ip-blueprint.yaml'
+
+    inputs = (
+            'project',
+            'network',
+            'zone',
+            'gcp_auth',
+            'image_id',
+            )
+
+    def assertions(self):
+        vm = self.test_env.storage.get_node_instances('vm')[0]
+
+        self.assertEqual(
+                vm['runtime_properties']['networkInterfaces'][0][
+                    'accessConfigs'][0]['natIP'],
+                vm['runtime_properties']['ip'])
+
+
 class GCPInstanceScriptTest(GCPTest, TestCase):
     blueprint_name = 'compute/startup-script-blueprint.yaml'
 
