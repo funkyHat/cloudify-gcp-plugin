@@ -43,6 +43,12 @@ class GCPTest(object):
         The deployment is uninstalled during test teardown"""
 
     @abstractproperty
+    def blueprint_name(self):
+        """The path to the blueprint file, relative to
+        `system_tests/local`
+        """
+
+    @abstractproperty
     def inputs(self):
         """The list of inputs which should be copied from the provider context
         inputs to the deployment inputs for `blueprint`"""
@@ -96,4 +102,4 @@ class GCPTest(object):
 
         self.assertions()
 
-        print('test_blueprint succeded')
+        print('\n{}:test_blueprint succeded\n'.format(type(self).__name__))
