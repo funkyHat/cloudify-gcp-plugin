@@ -29,10 +29,6 @@ def get_current_records(zone, name=None, type=None):
     return zone.list_records(name=name, type=type)
 
 
-def get_current_data(zone, name, type):
-    return get_current_records(zone, name, type)['rrsets'][0]['rrdatas']
-
-
 def generate_changes(dns_zone, action, data):
     """
     Produces a change request (additions, deletions) with the specified data
@@ -45,12 +41,28 @@ def generate_changes(dns_zone, action, data):
 
 def wait_for_change_completion(dns_zone, response):
     while response['status'] == 'pending':
+        sleep(3)
         response = dns_zone.discovery.changes().get(
                 project=utils.get_gcp_config()['project'],
                 managedZone=dns_zone.name,
                 changeId=response['id'],
-                )
+                ).execute()
     return response
+
+
+def traverse_item_heirarchy(root, keys):
+    """
+    Given a root and a list of keys, follow each key to get the value.
+
+    e.g.
+        traverse_item_heirarchy(root, [0, 'a', 'b'])
+    is equivalent to
+        root[0]['a']['b']
+    """
+    item = root
+    for key in keys:
+        item = item[key]
+    return item
 
 
 @operation
@@ -60,33 +72,53 @@ def create(type, name, resources, ttl, **kwargs):
 
     gcp_config = utils.get_gcp_config()
 
-    zone = [
-        rel.target.instance
-        for rel in ctx.relationships
-        if rel.type == 'cloudify.relationships.dns_record_contained_in_zone'
-        ]
+    zone = utils.get_relationships(
+            ctx,
+            filter_relationships='cloudify.gcp.relationships.'
+                                 'dns_record_contained_in_zone',
+            )[0].target.instance
 
     dns_zone = DNSZone(
             gcp_config,
             ctx.logger,
             zone.runtime_properties['name'],
+            dns_name=zone.runtime_properties['dnsName'],
             )
 
-    response = generate_changes(dns_zone.name, 'additions', {
+    if not name:
+        name = ctx.node.id
+    ctx.instance.runtime_properties['name'] = name
+
+    mappings = {
+        'dns_record_connected_to_instance':
+            ['networkInterfaces', 0, 'accessConfigs', 0, 'natIP'],
+        'dns_record_connected_to_ip':
+            ['address'],
+        }
+
+    rels = utils.get_relationships(
+            ctx,
+            filter_relationships=[
+                'cloudify.gcp.relationships.dns_record_connected_to_instance',
+                'cloudify.gcp.relationships.dns_record_connected_to_ip'
+                ],
+            )
+    for rel in rels:
+        item_path = mappings[rel.type.split('.')[-1]]
+        item = traverse_item_heirarchy(
+            rel.target.instance.runtime_properties,
+            item_path)
+        resources.append(item)
+
+    response = generate_changes(dns_zone, 'additions', [{
             "name": '{}.{}'
                     .format(name, zone.runtime_properties['dnsName']),
             "ttl": ttl,
-            "type": ctx.node.properties['type'],
+            "type": type,
             "rrdatas": resources,
-        }).execute()
+        }]).execute()
 
-    while response['status'] == 'pending':
-        sleep(2)
-        response = dns_zone.discovery.changes().get(
-                project=gcp_config['project'],
-                managedZone=zone.runtime_properties['name'],
-                changeId=response['id'],
-                )
+    response = wait_for_change_completion(dns_zone, response)
 
     if response['status'] != 'done':
         raise NonRecoverableError('unexpected response status: {}'.format(
@@ -101,10 +133,18 @@ def create(type, name, resources, ttl, **kwargs):
 def delete(**kwargs):
     gcp_config = utils.get_gcp_config()
     if ctx.instance.runtime_properties.get('created'):
+
+        zone = utils.get_relationships(
+                ctx,
+                filter_relationships='cloudify.gcp.relationships.'
+                                     'dns_record_contained_in_zone',
+                )[0].target.instance
         dns_zone = DNSZone(
                 gcp_config,
                 ctx.logger,
-                ctx.instance.runtime_properties['name'])
+                zone.runtime_properties['name'],
+                dns_name=zone.runtime_properties['dnsName'],
+                )
 
         rrsets = get_current_records(
                 dns_zone,
@@ -113,7 +153,8 @@ def delete(**kwargs):
                 )
 
         wait_for_change_completion(
-                generate_changes(dns_zone.name, 'deletions', rrsets))
+                dns_zone,
+                generate_changes(dns_zone, 'deletions', rrsets).execute())
 
         ctx.instance.runtime_properties.pop('created', None)
 

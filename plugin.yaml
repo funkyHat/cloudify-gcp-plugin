@@ -441,7 +441,7 @@ node_types:
           A dictionary of values to pass to authenticate with the GCP API.
         default: {}
 
-  cloudify.gcp.nodes.StaticIP:
+  cloudify.gcp.nodes.GlobalStaticIP:
     derived_from: cloudify.nodes.VirtualIP
     properties:
       use_external_resource:
@@ -474,6 +474,25 @@ node_types:
               default: { get_property: [SELF, name]}
         delete:
           implementation: gcp_plugin.cloudify_gcp.compute.static_ip.delete
+
+  cloudify.gcp.nodes.StaticIP:
+    derived_from: cloudify.gcp.nodes.GlobalStaticIP
+    properties:
+      region:
+        default: ''
+      gcp_config:
+        description: >
+          A dictionary of values to pass to authenticate with the GCP API.
+        default: {}
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: gcp_plugin.cloudify_gcp.compute.static_ip.create
+          inputs:
+            name:
+              default: { get_property: [SELF, name]}
+            region:
+              default: { get_property: [SELF, region]}
 
   cloudify.gcp.nodes.Image:
     derived_from: cloudify.nodes.Root

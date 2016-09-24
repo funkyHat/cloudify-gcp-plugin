@@ -18,8 +18,10 @@ from cloudify.decorators import operation
 
 from .. import constants
 from .. import utils
-from cloudify_gcp.gcp import GoogleCloudPlatform
-from cloudify_gcp.gcp import check_response
+from ..gcp import (
+    check_response,
+    GoogleCloudPlatform,
+    )
 
 
 class DNSZone(GoogleCloudPlatform):
@@ -34,7 +36,8 @@ class DNSZone(GoogleCloudPlatform):
 
         :param config: gcp auth file
         :param logger: logger object
-        :param network: network dictionary having at least 'name' key
+        :param name: internal name for the dns zone
+        :param dns_name: FQDN for the zone
 
         """
         super(DNSZone, self).__init__(
@@ -42,6 +45,7 @@ class DNSZone(GoogleCloudPlatform):
             logger,
             utils.get_gcp_resource_name(name),
             discovery='dns',
+            scope='https://www.googleapis.com/auth/ndev.clouddns.readwrite',
             )
         self.name = name
         self.dns_name = dns_name
@@ -52,7 +56,7 @@ class DNSZone(GoogleCloudPlatform):
         Create GCP DNS Zone.
         Global operation.
 
-        :return: REST response with operation responsible for the network
+        :return: REST response with operation responsible for the zone
         creation process and its status
         """
         self.logger.info("Create DNS Zone '{0}'".format(self.name))
@@ -66,8 +70,7 @@ class DNSZone(GoogleCloudPlatform):
         Delete GCP DNS Zone.
         Global operation
 
-        :param network: network name
-        :return: REST response with operation responsible for the network
+        :return: REST response with operation responsible for the zone
         deletion process and its status
         """
         self.logger.info("Delete DNS Zone '{0}'".format(self.name))
@@ -87,13 +90,13 @@ class DNSZone(GoogleCloudPlatform):
     def list_records(self, name=None, type=None):
         rrsets = []
 
-        resources = self.discovery.managedZones().resourceRecordSets()
+        resources = self.discovery.resourceRecordSets()
 
         request = resources.list(
                 project=self.project,
                 managedZone=self.name,
                 type=type,
-                name=name,
+                name='.'.join([name, self.dns_name]),
                 )
 
         while request is not None:
@@ -106,6 +109,11 @@ class DNSZone(GoogleCloudPlatform):
                     previous_response=response)
 
         return rrsets
+
+    def get(self):
+        return self.discovery.managedZones().get(
+            project=self.project,
+            managedZone=self.name).execute()
 
 
 @operation
@@ -122,12 +130,12 @@ def create(name, dns_name, **kwargs):
             ctx.logger,
             name,
             dns_name)
-    utils.create(dns_zone)
-    ctx.instance.runtime_properties = dns_zone
+    resource = utils.create(dns_zone)
+    ctx.instance.runtime_properties.update(resource)
 
 
 @operation
-@utils.retry_on_failure('Retrying deleting network')
+@utils.retry_on_failure('Retrying deleting dns zone')
 @utils.throw_cloudify_exceptions
 def delete(**kwargs):
     gcp_config = utils.get_gcp_config()
@@ -138,8 +146,9 @@ def delete(**kwargs):
                 ctx.logger,
                 name)
         utils.delete_if_not_external(dns_zone)
-        ctx.instance.runtime_properties.pop(constants.NAME, None)
 
         if not utils.is_object_deleted(dns_zone):
             ctx.operation.retry('Zone is not yet deleted. Retrying:',
                                 constants.RETRY_DEFAULT_DELAY)
+
+        ctx.instance.runtime_properties.pop('name', None)

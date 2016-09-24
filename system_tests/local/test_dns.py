@@ -13,66 +13,49 @@
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 
-from copy import copy
-import os
+from time import sleep
+
+import dns.resolver
 
 from cosmo_tester.framework.testenv import TestCase
-from cloudify.workflows import local
-from cloudify_cli import constants as cli_constants
+
+from . import GCPTest
 
 
-class GCPDNSTest(TestCase):
-    def setUp(self):
-        super(GCPDNSTest, self).setUp()
+class GCPDNSTestB(GCPTest, TestCase):
+    blueprint_name = 'dns/simple-blueprint.yaml'
 
-        self.ext_inputs = {
-                k: self.env.cloudify_config[k]
-                for k in (
-                    'gcp_auth',
-                    'project',
-                    'zone',
-                )}
+    inputs = (
+            'gcp_auth',
+            'project',
+            'zone',
+            'network',
+            )
 
-        blueprints_path = os.path.split(os.path.abspath(__file__))[0]
-        blueprints_path = os.path.split(blueprints_path)[0]
-        self.blueprints_path = os.path.join(
-            blueprints_path,
-            'resources',
-            'dns'
-        )
+    def assertions(self):
 
-    def test_blueprint(self):
-        blueprint = os.path.join(
-            self.blueprints_path,
-            'simple-blueprint.yaml'
-        )
+        # get the GCP nameservers as an IP addresses
+        res = dns.resolver.Resolver()
+        dns_ips = [
+                res.query(address, 'A').response.answer[0][0].address
+                for address
+                in self.outputs['nameservers']
+                ]
+        # replace the resolver's nameservers
+        res.nameservers = dns_ips
 
-        if self.env.install_plugins:
-            self.logger.info('installing required plugins')
-            self.cfy.install_plugins_locally(
-                blueprint_path=blueprint)
+        print('sleeping for 30s to allow NSs to catch up...')
+        sleep(30)
 
-        self.logger.info('Creating a new DNS Zone')
-
-        inputs = copy(self.ext_inputs)
-
-        self.dns_env = local.init_env(
-            blueprint,
-            inputs=inputs,
-            name=self._testMethodName,
-            ignored_modules=cli_constants.IGNORED_LOCAL_WORKFLOW_MODULES)
-
-        self.addCleanup(
-                self.dns_env.execute,
-                'uninstall',
-                task_retries=10,
-                task_retry_interval=3,
-                )
-
-        self.dns_env.execute(
-            'install',
-            task_retries=10,
-            task_retry_interval=3,
-        )
-
-        outputs = self.dns_env.outputs()
+        for subdomain, ip in [
+                ['direct-to-ip', self.outputs['ip']],
+                ['test', self.outputs['ip']],
+                ['literal-only', '10.9.8.7'],
+                ['names-are-relative', '127.3.4.5'],
+                ]:
+            self.assertEqual(
+                    ip,
+                    res.query(
+                        '{}.getcloudify.org.'.format(subdomain),
+                        'A',
+                        ).response.answer[0][0].address)
