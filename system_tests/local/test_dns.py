@@ -22,7 +22,7 @@ from cosmo_tester.framework.testenv import TestCase
 from . import GCPTest
 
 
-class GCPDNSTestB(GCPTest, TestCase):
+class GCPDNSTest(GCPTest, TestCase):
     blueprint_name = 'dns/simple-blueprint.yaml'
 
     inputs = (
