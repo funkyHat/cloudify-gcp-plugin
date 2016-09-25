@@ -18,7 +18,7 @@
 from mock import patch
 
 from cloudify_gcp.compute import backend_service
-from . import TestGCP
+from ...tests import TestGCP
 
 
 @patch('cloudify_gcp.utils.assure_resource_id_correct', return_value=True)

@@ -16,7 +16,7 @@
 from mock import Mock, patch
 
 from cloudify_gcp.compute import route
-from . import TestGCP
+from ...tests import TestGCP
 
 
 @patch('cloudify_gcp.gcp.ServiceAccountCredentials.from_json_keyfile_dict')

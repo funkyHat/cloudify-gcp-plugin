@@ -21,8 +21,8 @@ from mock import patch, MagicMock
 
 from cloudify.exceptions import NonRecoverableError
 
-from cloudify_gcp.compute import health_check
-from . import TestGCP
+from .. import health_check
+from ...tests import TestGCP
 
 
 @patch('cloudify_gcp.utils.assure_resource_id_correct', return_value=True)

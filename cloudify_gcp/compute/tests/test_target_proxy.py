@@ -22,7 +22,7 @@ from mock import patch, MagicMock
 from cloudify.exceptions import NonRecoverableError
 
 from cloudify_gcp.compute import target_proxy
-from . import TestGCP
+from ...tests import TestGCP
 
 
 @patch('cloudify_gcp.utils.assure_resource_id_correct', return_value=True)

@@ -15,16 +15,48 @@
 
 from mock import patch
 
-from ..compute import static_ip
-from . import TestGCP
+from .. import static_ip
+from ...tests import TestGCP
 
 
 @patch('cloudify_gcp.gcp.ServiceAccountCredentials.from_json_keyfile_dict')
 @patch('cloudify_gcp.gcp.build')
 class TestStaticIP(TestGCP):
 
+    def setUp(self):
+        super(TestStaticIP, self).setUp()
+
+        self.ctxmock.node.properties['gcp_config']['zone'] = 'us-central1-b'
+
     def test_create(self, mock_build, *args):
-        static_ip.create('name')
+        static_ip.create('name', 'region')
+
+        mock_build().addresses().insert.assert_called_once_with(
+                body={
+                    'description': 'Cloudify generated Static IP',
+                    'name': 'name',
+                    },
+                project='not really a project',
+                region='region',
+                )
+
+    def test_delete(self, mock_build, *args):
+        self.ctxmock.instance.runtime_properties.update({
+            'gcp_name': 'delete me',
+            'region': 'Costa Del Sol',
+            'name': 'delete me',
+            })
+
+        static_ip.delete()
+
+        mock_build().addresses().delete.assert_called_once_with(
+                project='not really a project',
+                address='delete me',
+                region='Costa Del Sol',
+                )
+
+    def test_create_global(self, mock_build, *args):
+        static_ip.create('name', '')
 
         mock_build().globalAddresses().insert.assert_called_once_with(
                 body={
@@ -34,8 +66,10 @@ class TestStaticIP(TestGCP):
                 project='not really a project',
                 )
 
-    def test_delete(self, mock_build, *args):
-        self.ctxmock.instance.runtime_properties['gcp_name'] = 'delete me'
+    def test_delete_global(self, mock_build, *args):
+        self.ctxmock.instance.runtime_properties.update({
+            'name': 'delete me',
+            })
 
         static_ip.delete()
 

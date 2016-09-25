@@ -19,8 +19,8 @@ from mock import patch
 
 from cloudify.exceptions import NonRecoverableError
 
-from cloudify_gcp.compute import instance
-from . import TestGCP
+from .. import instance
+from ...tests import TestGCP
 
 
 @patch('cloudify_gcp.gcp.ServiceAccountCredentials.from_json_keyfile_dict')

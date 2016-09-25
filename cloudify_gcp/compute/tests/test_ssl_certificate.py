@@ -17,8 +17,8 @@ from mock import patch, MagicMock
 
 from cloudify.exceptions import NonRecoverableError
 
-from ..compute import ssl_certificate
-from . import TestGCP
+from .. import ssl_certificate
+from ...tests import TestGCP
 
 
 def _get_pem_data(type, data):

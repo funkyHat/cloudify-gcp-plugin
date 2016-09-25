@@ -17,8 +17,8 @@
 
 from mock import patch
 
-from cloudify_gcp.compute import keypair
-from . import TestGCP
+from .. import keypair
+from ...tests import TestGCP
 
 
 @patch('cloudify_gcp.utils.assure_resource_id_correct', return_value=True)

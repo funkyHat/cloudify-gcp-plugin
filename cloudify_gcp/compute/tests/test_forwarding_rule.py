@@ -15,30 +15,34 @@
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 
-from mock import patch
+from mock import patch, MagicMock
 
-from cloudify_gcp.compute import url_map
-from . import TestGCP
+from .. import forwarding_rule
+from ...tests import TestGCP
 
 
 @patch('cloudify_gcp.utils.assure_resource_id_correct', return_value=True)
 @patch('cloudify_gcp.gcp.ServiceAccountCredentials.from_json_keyfile_dict')
 @patch('cloudify_gcp.utils.get_gcp_resource_name', return_value='valid_name')
 @patch('cloudify_gcp.gcp.build')
-class TestUrlMap(TestGCP):
+class TestForwardingRule(TestGCP):
 
     def test_create(self, mock_build, *args):
-        url_map.create(
+        forwarding_rule.create(
                 'name',
-                'default service',
+                'target',
+                'range',
+                'ip',
                 )
 
         mock_build.assert_called_once()
-        mock_build().urlMaps().insert.assert_called_with(
+        mock_build().globalForwardingRules().insert.assert_called_with(
                 body={
-                    'name': 'name',
-                    'description': 'Cloudify generated URL Map',
-                    'defaultService': 'default service'},
+                    'portRange': 'range',
+                    'IPAddress': 'ip',
+                    'target': 'target',
+                    'description': 'Cloudify generated Global Forwarding Rule',
+                    'name': 'name'},
                 project='not really a project'
                 )
 
@@ -46,12 +50,17 @@ class TestUrlMap(TestGCP):
     def test_delete(self, mock_response, mock_build, *args):
         self.ctxmock.instance.runtime_properties.update({
             'gcp_name': 'delete_name',
+            'gcp_target_proxy_type': 'http',
             })
 
-        url_map.delete()
+        operation = MagicMock()
+        operation.has_finished.return_value = True
+        mock_response.return_value = operation
+
+        forwarding_rule.delete()
 
         mock_build.assert_called_once()
-        mock_build().urlMaps().delete.assert_called_with(
+        mock_build().globalForwardingRules().delete.assert_called_with(
+                forwardingRule='delete_name',
                 project='not really a project',
-                urlMap='delete_name'
                 )

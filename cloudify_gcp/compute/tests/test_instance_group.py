@@ -15,8 +15,8 @@
 
 from mock import patch
 
-from ..compute import instance_group
-from . import TestGCP
+from .. import instance_group
+from ...tests import TestGCP
 
 
 @patch('cloudify_gcp.gcp.ServiceAccountCredentials.from_json_keyfile_dict')
