@@ -35,11 +35,13 @@ class SubNetwork(GoogleCloudPlatform):
                  network=None,
                  ):
         """
-        Create Network object
+        Create SubNetwork object
 
         :param config: gcp auth file
         :param logger: logger object
-        :param network: network dictionary having at least 'name' key
+        :param name: name of the subnetwork
+        :param region: region which this subnetwork will be in
+        :param subnet: CIDR range description for this subnet
 
         """
         super(SubNetwork, self).__init__(
@@ -53,13 +55,13 @@ class SubNetwork(GoogleCloudPlatform):
     @check_response
     def create(self):
         """
-        Create GCP network.
+        Create GCP subnetwork.
         Global operation.
 
-        :return: REST response with operation responsible for the network
+        :return: REST response with operation responsible for the subnetwork
         creation process and its status
         """
-        self.logger.info('Create network {0}'.format(self.name))
+        self.logger.info('Create subnetwork {0}'.format(self.name))
         return self.discovery.subnetworks().insert(
                 project=self.project,
                 region=self.region,
@@ -68,14 +70,13 @@ class SubNetwork(GoogleCloudPlatform):
     @check_response
     def delete(self):
         """
-        Delete GCP network.
+        Delete GCP subnetwork.
         Global operation
 
-        :param network: network name
         :return: REST response with operation responsible for the network
         deletion process and its status
         """
-        self.logger.info('Delete network {0}'.format(self.name))
+        self.logger.info('Delete subnetwork {0}'.format(self.name))
         return self.discovery.subnetworks().delete(
             project=self.project,
             region=basename(self.region),
@@ -85,12 +86,12 @@ class SubNetwork(GoogleCloudPlatform):
     @check_response
     def get(self):
         """
-        Get GCP network details.
+        Get GCP subnetwork details.
 
-        :return: REST response with operation responsible for the network
+        :return: REST response with operation responsible for the subnetwork
         details retrieval
         """
-        self.logger.info('Get network {0} details'.format(self.name))
+        self.logger.info('Get subnetwork {0} details'.format(self.name))
         return self.discovery.subnetworks().get(
             project=self.project,
             region=self.region,
@@ -99,11 +100,12 @@ class SubNetwork(GoogleCloudPlatform):
     @check_response
     def list(self):
         """
-        List networks.
+        List subnetworks.
 
-        :return: REST response with list of networks in a project
+        :return: REST response with list of subnetworks in a project
         """
-        self.logger.info('List networks in project {0}'.format(self.project))
+        self.logger.info(
+                'List subnetworks in project {0}'.format(self.project))
         return self.discovery.subnetworks().list(
             project=self.project).execute()
 
@@ -112,7 +114,7 @@ class SubNetwork(GoogleCloudPlatform):
 
     def to_dict(self):
         body = {
-            'description': 'Cloudify generated network',
+            'description': 'Cloudify generated subnetwork',
             'name': self.name,
             'network': self.network,
             'ipCidrRange': self.subnet,
@@ -131,6 +133,7 @@ def create(name, region, subnet, **kwargs):
             filter_relationships='cloudify.gcp.relationships'
                                  '.contained_in_network'
             )[0].target.instance
+
     subnetwork = SubNetwork(
             gcp_config,
             ctx.logger,
@@ -139,6 +142,7 @@ def create(name, region, subnet, **kwargs):
             subnet,
             network.runtime_properties['selfLink'],
             )
+
     if utils.async_operation():
         ctx.instance.runtime_properties.update(subnetwork.get())
     else:
@@ -168,14 +172,14 @@ def delete(**kwargs):
                 constants.RETRY_DEFAULT_DELAY)
 
 
-def creation_validation(ctx, **kwargs):
+def creation_validation(**kwargs):
     types = ('cloudify.gcp.relationships.contained_in_network',
              'cloudify.gcp.nodes.Network')
     rels = utils.get_relationships(ctx, *types)
     if len(rels) != 1:
         raise NonRecoverableError(
                 "SubNetwork must be contained in a '{1}' using the '{0}' "
-                "relationship".format(types))
+                "relationship".format(*types))
     network = rels[0].target
     if network.node.properties['auto_subnets']:
         raise NonRecoverableError(
