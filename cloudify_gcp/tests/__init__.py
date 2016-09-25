@@ -24,6 +24,8 @@ from cloudify.manager import DirtyTrackingDict
 class TestGCP(unittest.TestCase):
 
     def setUp(self):
+        super(TestGCP, self).setUp()
+
         ctx = self.ctxmock = Mock()
         ctx.node.name = 'name'
         ctx.node.id = 'id'
@@ -48,4 +50,5 @@ class TestGCP(unittest.TestCase):
                     },
                 },
             }
+        ctx.instance.relationships = []
         current_ctx.set(ctx)
