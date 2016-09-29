@@ -411,8 +411,6 @@ def start(**kwargs):
 def delete(name, zone, **kwargs):
     gcp_config = utils.get_gcp_config()
     props = ctx.instance.runtime_properties
-    if not name and props.get('name', None):
-        name = props['name']
     name = utils.get_final_resource_name(name)
 
     instance = Instance(gcp_config,
