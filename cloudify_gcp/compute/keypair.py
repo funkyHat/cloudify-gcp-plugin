@@ -19,12 +19,15 @@ from Crypto.PublicKey import RSA
 
 from cloudify import ctx
 from cloudify.decorators import operation
+from cloudify.exceptions import NonRecoverableError
 
 from .. import constants
 from .. import utils
-from cloudify_gcp.gcp import check_response
-from cloudify_gcp.gcp import GoogleCloudPlatform
-from cloudify_gcp.gcp import GCPError
+from ..gcp import (
+        GCPError,
+        check_response,
+        GoogleCloudPlatform,
+        )
 
 
 class KeyPair(GoogleCloudPlatform):
@@ -133,6 +136,9 @@ def create(user,
         keypair.private_key
     ctx.instance.runtime_properties[constants.PUBLIC_KEY] = keypair.public_key
     if not utils.should_use_external_resource():
+        if not user:
+            raise NonRecoverableError(
+                    'empty user string not allowed for newly created key')
         keypair.save_private_key()
 
 

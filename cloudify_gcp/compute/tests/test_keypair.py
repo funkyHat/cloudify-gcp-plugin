@@ -17,6 +17,8 @@
 
 from mock import patch
 
+from cloudify.exceptions import NonRecoverableError
+
 from .. import keypair
 from ...tests import TestGCP
 
@@ -44,7 +46,7 @@ class TestGCPKeypair(TestGCP):
                  'user': 'user'},
                 self.ctxmock.instance.runtime_properties)
 
-    def test_create_external(self, mock_get_resource, *args):
+    def test_create_external(self, *args):
         self.ctxmock.node.properties['use_external_resource'] = True
 
         keypair.create(
@@ -64,7 +66,18 @@ class TestGCPKeypair(TestGCP):
                  'user': 'user'},
                 self.ctxmock.instance.runtime_properties)
 
-    def test_delete(self, mock_rsa, *args):
+    def test_create_no_user(self, *args):
+
+        with self.assertRaises(NonRecoverableError) as e:
+            keypair.create(
+                    '',
+                    'private',
+                    'public',
+                    )
+
+        self.assertIn('empty user', e.exception.message)
+
+    def test_delete(self, *args):
         self.ctxmock.instance.runtime_properties[
                 'gcp_public_key'] = 'delete_pubkey'
 
