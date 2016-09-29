@@ -110,10 +110,12 @@ def create(name, named_ports, **kwargs):
                                    name=name,
                                    named_ports=named_ports)
 
-    utils.create(instance_group)
-    ctx.instance.runtime_properties[constants.NAME] = name
-    ctx.instance.runtime_properties[constants.SELF_URL] = \
-        instance_group.get_self_url()
+    if utils.async_operation():
+        ctx.instance.runtime_properties.update(instance_group.get())
+    else:
+        response = utils.create(instance_group)
+        ctx.instance.runtime_properties['_operation'] = response
+        ctx.operation.retry('InstanceGroup creation started')
 
 
 @operation
@@ -122,13 +124,14 @@ def create(name, named_ports, **kwargs):
 def delete(**kwargs):
     gcp_config = utils.get_gcp_config()
     name = ctx.instance.runtime_properties.get(constants.NAME, None)
+
     if name:
-        instance_group = InstanceGroup(gcp_config,
-                                       ctx.logger,
-                                       name=name)
-        utils.delete_if_not_external(instance_group)
-        ctx.instance.runtime_properties.pop(constants.NAME, None)
-        ctx.instance.runtime_properties.pop(constants.SELF_URL, None)
+        if not utils.async_operation():
+            instance_group = InstanceGroup(gcp_config,
+                                           ctx.logger,
+                                           name=name)
+            response = utils.delete_if_not_external(instance_group)
+            ctx.instance.runtime_properties['_operation'] = response
 
 
 @operation
