@@ -248,6 +248,32 @@ class TestGCPInstance(TestGCP):
         with self.assertRaises(NonRecoverableError):
             instance.add_external_ip('instance_name', 'zone')
 
+    def test_create_external_resource(self, mock_build, *args):
+        self.ctxmock.node.properties[
+                'use_external_resource'] = True
+        get_resp = object()
+        mock_build().instances().get().execute.return_value = {
+                'name': 'yes',
+                'hi': get_resp,
+                }
+
+        instance.create(
+                'instance_type',
+                'image_id',
+                'name',
+                zone='zone',
+                external_ip=False,
+                startup_script=None,
+                scopes='scopes',
+                tags=['tags'],
+                )
+
+        self.assertEqual(0, mock_build().instances().insert.call_count)
+        self.assertEqual(
+                get_resp,
+                self.ctxmock.instance.runtime_properties['hi']
+                )
+
     def test_remove_external_ip(self, mock_build, *args):
 
         instance.remove_external_ip('instance_name', 'a very fake zone')
