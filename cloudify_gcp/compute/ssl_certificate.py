@@ -84,7 +84,7 @@ def create(name, private_key, certificate, **kwargs):
                                      private_key=private_key_data,
                                      certificate=certificate_data)
     utils.create(ssl_certificate)
-    ctx.instance.runtime_properties[constants.NAME] = name
+    ctx.instance.runtime_properties['name'] = name
     ctx.instance.runtime_properties[constants.SELF_URL] = \
         ssl_certificate.get_self_url()
 
@@ -94,13 +94,13 @@ def create(name, private_key, certificate, **kwargs):
 @utils.throw_cloudify_exceptions
 def delete(**kwargs):
     gcp_config = utils.get_gcp_config()
-    name = ctx.instance.runtime_properties.get(constants.NAME)
+    name = ctx.instance.runtime_properties.get('name')
     if name:
         ssl_certificate = SslCertificate(config=gcp_config,
                                          logger=ctx.logger,
                                          name=name)
         utils.delete_if_not_external(ssl_certificate)
-        ctx.instance.runtime_properties.pop(constants.NAME, None)
+        ctx.instance.runtime_properties.pop('name')
         ctx.instance.runtime_properties.pop(constants.SELF_URL, None)
 
 

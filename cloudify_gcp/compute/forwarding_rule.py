@@ -15,7 +15,6 @@
 from cloudify import ctx
 from cloudify.decorators import operation
 
-from .. import constants
 from .. import utils
 from cloudify_gcp.gcp import GoogleCloudPlatform
 from cloudify_gcp.gcp import check_response
@@ -80,7 +79,7 @@ def create(name, target_proxy, port_range, ip_address, **kwargs):
                                            port_range,
                                            ip_address)
     utils.create(forwarding_rule)
-    ctx.instance.runtime_properties[constants.NAME] = name
+    ctx.instance.runtime_properties['name'] = name
 
 
 @operation
@@ -88,10 +87,10 @@ def create(name, target_proxy, port_range, ip_address, **kwargs):
 @utils.throw_cloudify_exceptions
 def delete(**kwargs):
     gcp_config = utils.get_gcp_config()
-    name = ctx.instance.runtime_properties.get(constants.NAME, None)
+    name = ctx.instance.runtime_properties.get('name')
     if name:
         forwarding_rule = GlobalForwardingRule(gcp_config,
                                                ctx.logger,
                                                name=name)
         utils.delete_if_not_external(forwarding_rule)
-        ctx.instance.runtime_properties.pop(constants.NAME, None)
+        ctx.instance.runtime_properties.pop('name')

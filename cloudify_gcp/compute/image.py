@@ -99,7 +99,7 @@ def create(image_name, image_path, **kwargs):
     name = utils.get_final_resource_name(image_name)
     image = Image(gcp_config, ctx.logger, name)
     upload_image(image, image_path)
-    ctx.instance.runtime_properties[constants.NAME] = image.name
+    ctx.instance.runtime_properties['name'] = image.name
 
 
 @utils.create_resource
@@ -113,7 +113,7 @@ def upload_image(image, image_path):
 @utils.throw_cloudify_exceptions
 def delete(**kwargs):
     gcp_config = utils.get_gcp_config()
-    name = ctx.instance.runtime_properties.get(constants.NAME, None)
+    name = ctx.instance.runtime_properties.get('name')
     image = Image(gcp_config, ctx.logger, name)
     utils.delete_if_not_external(image)
-    ctx.instance.runtime_properties.pop(constants.NAME, None)
+    ctx.instance.runtime_properties.pop('name')

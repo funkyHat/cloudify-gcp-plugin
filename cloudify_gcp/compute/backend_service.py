@@ -130,7 +130,7 @@ def create(name, health_check, additional_settings, **kwargs):
 @utils.throw_cloudify_exceptions
 def delete(**kwargs):
     gcp_config = utils.get_gcp_config()
-    name = ctx.instance.runtime_properties.get(constants.NAME, None)
+    name = ctx.instance.runtime_properties.get('name')
 
     if not utils.async_operation():
         backend_service = BackendService(gcp_config,

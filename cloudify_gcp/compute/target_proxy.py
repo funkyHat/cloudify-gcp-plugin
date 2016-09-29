@@ -169,9 +169,12 @@ def create(name, target_proxy_type, url_map, ssl_certificate, **kwargs):
 @utils.throw_cloudify_exceptions
 def delete(**kwargs):
     gcp_config = utils.get_gcp_config()
-    name = ctx.instance.runtime_properties.get(constants.NAME)
-    target_proxy_type = ctx.instance.runtime_properties.get(
-        constants.TARGET_PROXY_TYPE)
+    name = ctx.instance.runtime_properties.get('name')
+    if ctx.instance.runtime_properties.get(
+            'kind') == 'compute#targetHttpProxy':
+        target_proxy_type = 'http'
+    else:
+        target_proxy_type = 'https'
 
     target_proxy = target_proxy_of_type(target_proxy_type,
                                         config=gcp_config,

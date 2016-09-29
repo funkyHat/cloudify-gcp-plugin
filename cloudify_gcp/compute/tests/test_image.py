@@ -47,7 +47,7 @@ class TestGCPimage(TestGCP):
                 )
 
     def test_delete(self, mock_build, *args):
-        self.ctxmock.instance.runtime_properties['gcp_name'] = 'delete_name'
+        self.ctxmock.instance.runtime_properties['name'] = 'delete_name'
 
         image.delete()
 

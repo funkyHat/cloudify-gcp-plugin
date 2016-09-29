@@ -93,7 +93,7 @@ def create(image, name, size, **kwargs):
                 name=name,
                 size_gb=size)
     utils.create(disk)
-    ctx.instance.runtime_properties[constants.NAME] = name
+    ctx.instance.runtime_properties['name'] = name
     ctx.instance.runtime_properties[constants.DISK] = \
         disk.disk_to_insert_instance_dict(name)
 
@@ -103,13 +103,13 @@ def create(image, name, size, **kwargs):
 @utils.throw_cloudify_exceptions
 def delete(**kwargs):
     gcp_config = utils.get_gcp_config()
-    name = ctx.instance.runtime_properties.get(constants.NAME, None)
+    name = ctx.instance.runtime_properties.get('name')
     disk = Disk(gcp_config,
                 ctx.logger,
                 name=name)
     utils.delete_if_not_external(disk)
     ctx.instance.runtime_properties.pop(constants.DISK, None)
-    ctx.instance.runtime_properties.pop(constants.NAME, None)
+    ctx.instance.runtime_properties.pop('name')
 
 
 @operation

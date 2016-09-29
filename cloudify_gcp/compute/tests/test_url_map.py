@@ -47,7 +47,7 @@ class TestUrlMap(TestGCP):
     @patch('cloudify_gcp.utils.response_to_operation')
     def test_delete(self, mock_response, mock_build, *args):
         self.ctxmock.instance.runtime_properties.update({
-            'gcp_name': 'delete_name',
+            'name': 'delete_name',
             })
 
         url_map.delete()

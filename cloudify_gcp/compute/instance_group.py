@@ -15,7 +15,6 @@
 from cloudify import ctx
 from cloudify.decorators import operation
 
-from .. import constants
 from .. import utils
 from cloudify_gcp.gcp import GoogleCloudPlatform
 from cloudify_gcp.gcp import check_response
@@ -123,7 +122,7 @@ def create(name, named_ports, **kwargs):
 @utils.throw_cloudify_exceptions
 def delete(**kwargs):
     gcp_config = utils.get_gcp_config()
-    name = ctx.instance.runtime_properties.get(constants.NAME, None)
+    name = ctx.instance.runtime_properties.get('name')
 
     if name:
         if not utils.async_operation():

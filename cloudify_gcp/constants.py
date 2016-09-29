@@ -29,7 +29,6 @@ CHUNKSIZE = 2 * 1024 * 1024
 API_V1 = 'v1'
 API_BETA = 'beta'
 
-NAME = 'gcp_name'
 DISK = 'gcp_disk'
 GCP_ZONE = 'gcp_zone'
 HEALTH_CHECK_TYPE = 'gcp_health_check_type'

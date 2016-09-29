@@ -40,7 +40,7 @@ class TestInstanceGroup(TestGCP):
                 )
 
     def test_delete(self, mock_build, *args):
-        self.ctxmock.instance.runtime_properties['gcp_name'] = 'delete me'
+        self.ctxmock.instance.runtime_properties['name'] = 'delete me'
 
         instance_group.delete()
 
