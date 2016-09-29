@@ -114,11 +114,13 @@ class Network(GoogleCloudPlatform):
 def create(name, auto_subnets, **kwargs):
     gcp_config = utils.get_gcp_config()
     name = utils.get_final_resource_name(name)
+
     network = Network(
             config=gcp_config,
             logger=ctx.logger,
             auto_subnets=auto_subnets,
             name=name)
+
     if utils.async_operation():
         ctx.instance.runtime_properties.update(network.get())
     else:
@@ -140,9 +142,10 @@ def delete(name=None, **kwargs):
     else:
         name = utils.get_final_resource_name(name)
 
-    network = Network(gcp_config,
-                      ctx.logger,
-                      name)
+    network = Network(
+            gcp_config,
+            ctx.logger,
+            name)
 
     if not utils.async_operation():
         response = utils.delete_if_not_external(network)
