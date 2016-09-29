@@ -106,10 +106,7 @@ def assure_resource_id_correct():
 
 
 def get_final_resource_name(name):
-    if should_use_external_resource():
-        return assure_resource_id_correct()
-    else:
-        return name or get_gcp_resource_name(ctx.instance.id)
+    return name or get_gcp_resource_name(ctx.instance.id)
 
 
 def create_resource(func):
@@ -127,6 +124,7 @@ def create_resource(func):
                         format(name, str(error)))
                 else:
                     raise error
+            ctx.instance.runtime_properties.update(resource.body)
         else:
             return func(resource, *args, **kwargs)
 
@@ -158,6 +156,10 @@ def sync_operation(func):
 def async_operation():
     props = ctx.instance.runtime_properties
     response = props.get('_operation', None)
+
+    if should_use_external_resource() and props.get('name'):
+        return True
+
     if response:
         operation = response_to_operation(
                 response,

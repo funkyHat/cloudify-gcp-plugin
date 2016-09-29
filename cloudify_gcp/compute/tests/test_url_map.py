@@ -28,6 +28,8 @@ from ...tests import TestGCP
 class TestUrlMap(TestGCP):
 
     def test_create(self, mock_build, *args):
+        self.ctxmock.node.properties['default_service'] = 'default service'
+
         url_map.create(
                 'name',
                 'default service',

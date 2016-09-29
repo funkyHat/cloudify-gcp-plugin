@@ -113,8 +113,7 @@ class TestUtilsWithCTX(unittest.TestCase):
 
         out = utils.get_final_resource_name('name')
 
-        mock_assure_correct.assert_called_once_with()
-        self.assertIs(out, mock_assure_correct())
+        self.assertIs('name', out)
 
     def test_assure_resource_id_correct(self, *args):
         self.ctxmock.node.properties['resource_id'] = 'valid'

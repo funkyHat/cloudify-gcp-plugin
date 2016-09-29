@@ -12,7 +12,9 @@
 #    * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
+
 import time
+from os.path import basename
 
 from cloudify import ctx
 from cloudify.decorators import operation
@@ -24,12 +26,25 @@ from cloudify_gcp.gcp import check_response
 
 
 class StaticIP(GoogleCloudPlatform):
+    """
+    This class handles both StaticIP and GlobalStaticIP.
+    In the API these only differ in that StaticIP (i.e. `addresses`) requires a
+    region, while GlobalStaticIP (i.e. globalAddresses) does not accept one.
+    """
+
     def __init__(self,
                  config,
                  logger,
                  name,
-                 ip=None):
+                 region=None,
+                 ):
         super(StaticIP, self).__init__(config, logger, name)
+        self.region = region
+
+    def _get_resource_type(self):
+        if self.region:
+            return self.discovery.addresses()
+        return self.discovery.globalAddresses()
 
     def to_dict(self):
         body = {
@@ -38,37 +53,55 @@ class StaticIP(GoogleCloudPlatform):
         }
         return body
 
+    def _common_kwargs(self):
+        args = {'project': self.project}
+        if self.region:
+            args['region'] = self.region
+        return args
+
     @check_response
     def get(self):
-        return self.discovery.globalAddresses().get(
-            project=self.project,
-            address=self.name).execute()
+        return self._get_resource_type().get(
+            address=self.name,
+            **self._common_kwargs()).execute()
 
     @check_response
     def create(self):
-        return self.discovery.globalAddresses().insert(
-            project=self.project,
-            body=self.to_dict()).execute()
+        return self._get_resource_type().insert(
+            body=self.to_dict(),
+            **self._common_kwargs()).execute()
 
     @check_response
     def delete(self):
-        return self.discovery.globalAddresses().delete(
-            project=self.project,
-            address=self.name).execute()
+        return self._get_resource_type().delete(
+            address=self.name,
+            **self._common_kwargs()).execute()
 
 
 @operation
 @utils.throw_cloudify_exceptions
-def create(name, **kwargs):
+def create(name, region=None, **kwargs):
     name = utils.get_final_resource_name(name)
+    props = ctx.instance.runtime_properties
     gcp_config = utils.get_gcp_config()
+
+    if not region and ctx.node.type == 'cloudify.gcp.nodes.StaticIP':
+        region = constants.ZONE_REGIONS[gcp_config['zone']]
+
     static_ip = StaticIP(gcp_config,
                          ctx.logger,
-                         name)
-    utils.create(static_ip)
-    ip_address = get_reserved_ip_address(static_ip)
-    ctx.instance.runtime_properties[constants.NAME] = name
-    ctx.instance.runtime_properties[constants.IP] = ip_address
+                         name,
+                         region=region,
+                         )
+
+    if utils.async_operation():
+        props.update(static_ip.get())
+    else:
+        response = utils.create(static_ip)
+        props['_operation'] = response
+        ctx.operation.retry(
+                'IP creation started',
+                constants.RETRY_DEFAULT_DELAY/10)
 
 
 @operation
@@ -76,14 +109,22 @@ def create(name, **kwargs):
 @utils.throw_cloudify_exceptions
 def delete(**kwargs):
     gcp_config = utils.get_gcp_config()
-    name = ctx.instance.runtime_properties.get(constants.NAME, None)
-    if name:
-        static_ip = StaticIP(gcp_config,
-                             ctx.logger,
-                             name=name)
-        utils.delete_if_not_external(static_ip)
-        ctx.instance.runtime_properties.pop(constants.NAME, None)
-        ctx.instance.runtime_properties.pop(constants.IP, None)
+    props = ctx.instance.runtime_properties
+    region = props.get('region')
+    if region:
+        region = basename(region)
+
+    static_ip = StaticIP(gcp_config,
+                         ctx.logger,
+                         name=props.get('name'),
+                         region=region,
+                         )
+
+    if not utils.async_operation():
+        response = utils.delete_if_not_external(static_ip)
+        ctx.instance.runtime_properties['_operation'] = response
+        ctx.operation.retry('Instance is not yet deleted. Retrying:',
+                            constants.RETRY_DEFAULT_DELAY/10)
 
 
 def get_reserved_ip_address(static_ip):

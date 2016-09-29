@@ -32,6 +32,10 @@ from ...tests import TestGCP
 class TestTargetProxy(TestGCP):
 
     def test_create_http(self, mock_build, *args):
+        self.ctxmock.node.properties.update({
+            'url_map': u'🗺',
+            })
+
         target_proxy.create(
                 'name',
                 'http',
@@ -49,6 +53,10 @@ class TestTargetProxy(TestGCP):
                 )
 
     def test_create_https(self, mock_build, *args):
+        self.ctxmock.node.properties.update({
+            'url_map': u'🗺',
+            })
+
         target_proxy.create(
                 'name',
                 'https',

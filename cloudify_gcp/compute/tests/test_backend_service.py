@@ -56,17 +56,22 @@ class TestGCPBackendService(TestGCP):
                 )
 
     def test_add_backend(self, mock_build, *args):
+        mock_build().globalOperations().get().execute.side_effect = [
+                {'status': 'PENDING', 'name': 'Dave'},
+                {'status': 'DONE', 'name': 'Dave'},
+                {'status': 'DONE', 'name': 'Harry'},
+                ]
         self.ctxmock.source.instance.runtime_properties = {
-                'gcp_backends': [],
+                'backends': [],
+                }
+
+        mock_build().backendServices().get().execute.return_value = {
+                    'backends': [
+                        {'group': 'group'},
+                    ],
                 }
 
         backend_service.add_backend('backend_name', 'group')
-
-        mock_build().backendServices().patch.assert_called_once_with(
-                backendService='backend_name',
-                body={'backends': [{'group': 'group'}]},
-                project='not really a project'
-                )
 
         backend_service.add_backend('backend_name', 'group 2')
 
@@ -80,8 +85,12 @@ class TestGCPBackendService(TestGCP):
                 )
 
     def test_remove_backend(self, mock_build, *args):
+        mock_build().globalOperations().get().execute.side_effect = [
+                {'status': 'PENDING', 'name': 'Boris'},
+                {'status': 'DONE', 'name': 'Boris'},
+                ]
         self.ctxmock.source.instance.runtime_properties = {
-                'gcp_backends': [
+                'backends': [
                     {'group': 'group 1'},
                     {'group': 'group 2'},
                     {'group': 'group 3'},

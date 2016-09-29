@@ -12,13 +12,17 @@
 #    * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
-from cloudify import ctx
-from cloudify.decorators import operation
 
-from .. import constants
+from cloudify import ctx
+from cloudify.exceptions import NonRecoverableError
+
 from .. import utils
-from cloudify_gcp.gcp import GoogleCloudPlatform
-from cloudify_gcp.gcp import check_response
+from .. import constants
+from ..utils import operation
+from cloudify_gcp.gcp import (
+        check_response,
+        GoogleCloudPlatform,
+        )
 
 
 class UrlMap(GoogleCloudPlatform):
@@ -67,16 +71,30 @@ class UrlMap(GoogleCloudPlatform):
 @operation
 @utils.throw_cloudify_exceptions
 def create(name, default_service, **kwargs):
+    props = ctx.instance.runtime_properties
     name = utils.get_final_resource_name(name)
     gcp_config = utils.get_gcp_config()
     url_map = UrlMap(gcp_config,
                      ctx.logger,
                      name,
                      default_service)
-    utils.create(url_map)
-    ctx.instance.runtime_properties[constants.NAME] = name
-    ctx.instance.runtime_properties[constants.SELF_URL] = \
-        url_map.get_self_url()
+
+    if utils.async_operation():
+        props.update(url_map.get())
+    else:
+        response = utils.create(url_map)
+        props['_operation'] = response
+        ctx.operation.retry('UrlMap is not yet created. Retrying:',
+                            constants.RETRY_DEFAULT_DELAY)
+
+
+def creation_validation(*args, **kwargs):
+    props = ctx.node.properties
+
+    if not props['default_service']:
+        raise NonRecoverableError(
+                'A default backend service must be supplied as default_service'
+                )
 
 
 @operation
@@ -89,6 +107,7 @@ def delete(**kwargs):
         url_map = UrlMap(gcp_config,
                          ctx.logger,
                          name=name)
-        utils.delete_if_not_external(url_map)
-        ctx.instance.runtime_properties.pop(constants.NAME, None)
-        ctx.instance.runtime_properties.pop(constants.SELF_URL, None)
+        if not utils.async_operation():
+            utils.delete_if_not_external(url_map)
+            ctx.operation.retry('UrlMap is not yet deleted. Retrying:',
+                                constants.RETRY_DEFAULT_DELAY)

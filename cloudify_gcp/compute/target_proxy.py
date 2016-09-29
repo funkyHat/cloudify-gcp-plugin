@@ -15,13 +15,15 @@
 from abc import ABCMeta, abstractmethod
 
 from cloudify import ctx
-from cloudify.decorators import operation
 from cloudify.exceptions import NonRecoverableError
 
-from .. import constants
 from .. import utils
-from cloudify_gcp.gcp import GoogleCloudPlatform
-from cloudify_gcp.gcp import check_response
+from .. import constants
+from ..utils import operation
+from ..gcp import (
+        check_response,
+        GoogleCloudPlatform,
+        )
 
 
 class TargetProxy(GoogleCloudPlatform):
@@ -142,6 +144,7 @@ class TargetHttpsProxy(TargetProxy):
 @operation
 @utils.throw_cloudify_exceptions
 def create(name, target_proxy_type, url_map, ssl_certificate, **kwargs):
+    props = ctx.instance.runtime_properties
     name = utils.get_final_resource_name(name)
     gcp_config = utils.get_gcp_config()
     target_proxy = target_proxy_of_type(target_proxy_type,
@@ -150,12 +153,15 @@ def create(name, target_proxy_type, url_map, ssl_certificate, **kwargs):
                                         name=name,
                                         url_map=url_map,
                                         ssl_certificate=ssl_certificate)
-    utils.create(target_proxy)
-    ctx.instance.runtime_properties[constants.NAME] = name
-    ctx.instance.runtime_properties[constants.TARGET_PROXY_TYPE] = \
-        target_proxy_type
-    ctx.instance.runtime_properties[constants.SELF_URL] = \
-        target_proxy.get_self_url()
+    # import pdb; pdb.set_trace()
+    if utils.async_operation():
+        props.update(target_proxy.get())
+    else:
+        response = utils.create(target_proxy)
+        props['_operation'] = response
+        ctx.operation.retry(
+                'TargetProxy creation started',
+                constants.RETRY_DEFAULT_DELAY)
 
 
 @operation
@@ -167,15 +173,22 @@ def delete(**kwargs):
     target_proxy_type = ctx.instance.runtime_properties.get(
         constants.TARGET_PROXY_TYPE)
 
-    if name:
-        target_proxy = target_proxy_of_type(target_proxy_type,
-                                            config=gcp_config,
-                                            logger=ctx.logger,
-                                            name=name)
-        utils.delete_if_not_external(target_proxy)
-        ctx.instance.runtime_properties.pop(constants.NAME, None)
-        ctx.instance.runtime_properties.pop(constants.TARGET_PROXY_TYPE, None)
-        ctx.instance.runtime_properties.pop(constants.SELF_URL, None)
+    target_proxy = target_proxy_of_type(target_proxy_type,
+                                        config=gcp_config,
+                                        logger=ctx.logger,
+                                        name=name)
+
+    if not utils.async_operation():
+        response = utils.delete_if_not_external(target_proxy)
+        ctx.instance.runtime_properties['_operation'] = response
+        ctx.operation.retry('TargetProxy is not yet deleted. Retrying:',
+                            constants.RETRY_DEFAULT_DELAY)
+
+
+def creation_validation(*args, **kwargs):
+    props = ctx.node.properties
+    if not props['url_map']:
+        raise NonRecoverableError('url_map must be specified')
 
 
 def target_proxy_of_type(target_proxy_type, **kwargs):

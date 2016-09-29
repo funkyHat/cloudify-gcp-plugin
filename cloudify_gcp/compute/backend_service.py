@@ -18,10 +18,12 @@ from copy import copy
 from cloudify import ctx
 from cloudify.decorators import operation
 
-from .. import constants
 from .. import utils
-from cloudify_gcp.gcp import GoogleCloudPlatform
-from cloudify_gcp.gcp import check_response
+from .. import constants
+from ..gcp import (
+        check_response,
+        GoogleCloudPlatform,
+        )
 
 
 class BackendService(GoogleCloudPlatform):
@@ -89,11 +91,13 @@ class BackendService(GoogleCloudPlatform):
             backendService=self.name,
             body=body).execute()
 
+    @utils.sync_operation
     def add_backend(self, current_backends, group_self_url):
         new_backend = {'group': group_self_url}
         backends = current_backends + [new_backend]
         return self.set_backends(backends)
 
+    @utils.sync_operation
     def remove_backend(self, current_backends, group_self_url):
         backends = filter(lambda backend: backend['group'] != group_self_url,
                           current_backends)
@@ -103,6 +107,7 @@ class BackendService(GoogleCloudPlatform):
 @operation
 @utils.throw_cloudify_exceptions
 def create(name, health_check, additional_settings, **kwargs):
+    props = ctx.instance.runtime_properties
     name = utils.get_final_resource_name(name)
     gcp_config = utils.get_gcp_config()
     backend_service = BackendService(gcp_config,
@@ -110,11 +115,14 @@ def create(name, health_check, additional_settings, **kwargs):
                                      name,
                                      health_check,
                                      additional_settings)
-    utils.create(backend_service)
-    ctx.instance.runtime_properties[constants.NAME] = name
-    ctx.instance.runtime_properties[constants.SELF_URL] = \
-        backend_service.get_self_url()
-    ctx.instance.runtime_properties[constants.BACKENDS] = []
+
+    if utils.async_operation():
+        props.update(backend_service.get())
+    else:
+        response = utils.create(backend_service)
+        props['_operation'] = response
+        ctx.operation.retry('BackendService is not yet created. Retrying:',
+                            constants.RETRY_DEFAULT_DELAY)
 
 
 @operation
@@ -123,14 +131,15 @@ def create(name, health_check, additional_settings, **kwargs):
 def delete(**kwargs):
     gcp_config = utils.get_gcp_config()
     name = ctx.instance.runtime_properties.get(constants.NAME, None)
-    if name:
+
+    if not utils.async_operation():
         backend_service = BackendService(gcp_config,
                                          ctx.logger,
                                          name=name)
-        utils.delete_if_not_external(backend_service)
-        ctx.instance.runtime_properties.pop(constants.NAME, None)
-        ctx.instance.runtime_properties.pop(constants.SELF_URL, None)
-        ctx.instance.runtime_properties.pop(constants.BACKENDS, None)
+        response = utils.delete_if_not_external(backend_service)
+        ctx.instance.runtime_properties['_operation'] = response
+        ctx.operation.retry('BackendService is not yet deleted. Retrying:',
+                            constants.RETRY_DEFAULT_DELAY)
 
 
 @operation
@@ -152,11 +161,11 @@ def remove_backend(backend_service_name, group_self_url, **kwargs):
 
 
 def _modify_backends(backend_service_name, group_self_url, modify_function):
+    sprops = ctx.source.instance.runtime_properties
     gcp_config = utils.get_gcp_config()
     backend_service = BackendService(gcp_config,
                                      ctx.logger,
                                      backend_service_name)
-    backends = ctx.source.instance.runtime_properties[constants.BACKENDS]
+    backends = sprops.get('backends', [])
     modify_function(backend_service, backends, group_self_url)
-    ctx.source.instance.runtime_properties[constants.BACKENDS] = \
-        backend_service.backends
+    sprops.update(backend_service.get())

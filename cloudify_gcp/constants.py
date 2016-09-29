@@ -80,3 +80,9 @@ REGION_ZONES_FULL = {
         k: ['{region}-{zone}'.format(region=k, zone=x) for x in v]
         for k, v in REGION_ZONES.items()
         }
+
+ZONE_REGIONS = {
+        z: r
+        for r, l in REGION_ZONES_FULL.items()
+        for z in l
+        }
