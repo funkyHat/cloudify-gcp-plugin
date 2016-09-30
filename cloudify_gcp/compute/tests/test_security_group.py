@@ -31,9 +31,7 @@ class TestGCPSecurityGroup(TestGCP):
         self.ctxmock.instance.relationships = []
 
     def test_create(self, mock_build, *args):
-        security_group.create(
-                'name',
-                [
+        self.ctxmock.node.properties['rules'] = rules = [
                     {
                         'allowed': {'NOTHING!': ''},
                         'sources': ['bob', 'jane'],
@@ -42,7 +40,11 @@ class TestGCPSecurityGroup(TestGCP):
                         'allowed': {'tcp': ['40', 41]},
                         'sources': ['jane'],
                     },
-                ],
+                ]
+
+        security_group.create(
+                'name',
+                rules,
                 )
 
         self.assertEqual(2, mock_build.call_count)

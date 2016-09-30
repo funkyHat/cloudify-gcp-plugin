@@ -16,10 +16,10 @@
 import re
 
 from cloudify import ctx
-from cloudify.decorators import operation
 from cloudify.exceptions import NonRecoverableError
 
 from .. import utils
+from ..utils import operation
 from .firewall import FirewallRule
 
 
@@ -63,19 +63,21 @@ def looks_like_a_cidr(addr):
         return True
 
 
-def creation_validation():
+def creation_validation(*args, **kwargs):
     props = ctx.node.properties
 
     def fail(issue):
         raise NonRecoverableError(
-                'Error in {rule}: {issue}'.format(rule, issue))
+                'Error in {rule}: {issue}'.format(rule=rule, issue=issue))
+
+    if not props['rules']:
+        raise NonRecoverableError('SecurityGroup must have at least one rule')
 
     for rule in props['rules']:
         if 'allowed' not in rule:
-            raise NonRecoverableError(
-                    'every rule must have at least one allowed source')
+            raise fail('every rule must have at least one allowed source')
         for source in rule['allowed']:
-            if not looks_like_a_cidr(source):
+            if source[0].isdigit() and not looks_like_a_cidr(source):
                 fail('invalid address: ' + source)
 
 
