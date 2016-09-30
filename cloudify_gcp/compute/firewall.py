@@ -174,6 +174,7 @@ class FirewallRule(GoogleCloudPlatform):
 def create(name, allowed, sources, target_tags, **kwargs):
     gcp_config = utils.get_gcp_config()
     network = utils.get_network(ctx)
+    name = utils.get_final_resource_name(name)
 
     firewall = FirewallRule(gcp_config,
                             ctx.logger,
@@ -202,110 +203,3 @@ def delete(**kwargs):
                                 network=network)
         utils.delete_if_not_external(firewall)
         ctx.instance.runtime_properties.pop('name', None)
-
-
-@operation
-@utils.retry_on_failure('Retrying creating security group')
-@utils.throw_cloudify_exceptions
-def create_security_group(name, rules, **kwargs):
-    gcp_config = utils.get_gcp_config()
-    network = utils.get_network(ctx)
-    name = utils.get_gcp_resource_name(
-            'ctx-sg-{}'.format(name if name else ctx.instance.id))
-
-    firewalls = [
-        FirewallRule(
-                gcp_config,
-                ctx.logger,
-                name=create_rule_name(name, rule),
-                network=network,
-                allowed=rule['allowed'],
-                sources=rule['sources'],
-                tags=[name],
-                security_group=True,
-                )
-        for rule in rules]
-
-    ctx.instance.runtime_properties['name'] = name
-    return handle_multiple_calls(firewalls, 'create', ctx.logger)
-
-
-def create_rule_name(name, rule):
-    """
-    Produce a gcp compatible rule name
-    """
-    rule_name = '{name}-from-{rule[sources]}-to-{rule[allowed]}'.format(
-            name=name,
-            rule=rule)
-    return utils.get_gcp_resource_name(rule_name)
-
-
-@utils.retry_on_failure('Retrying creating security group')
-@utils.throw_cloudify_exceptions
-def configure_security_group(**kwargs):
-    props = ctx.instance.runtime_properties
-    props['rules'] = []
-    network = utils.get_network(ctx)
-    for name, op in props['_operations'].items():
-        firewall = FirewallRule(
-                utils.get_gcp_config(),
-                ctx.logger,
-                network=network,
-                name=name,
-                )
-        props['rules'].append(firewall.get())
-    del props['_operations']
-
-
-def handle_multiple_calls(objects, call, logger):
-    """
-    Manage running several API calls which all must succeed for the node to be
-    successfully created.
-
-    objects must be passed in a consistent order or bad things will happen.
-    """
-    props = ctx.instance.runtime_properties
-    # Can be removed when
-    # https://github.com/cloudify-cosmo/cloudify-plugins-common/pull/251
-    # is finished:
-    props.dirty = True
-    operations = props.setdefault('_operations', {})
-
-    for obj in objects:
-        if obj.name in operations:
-            if operations[obj.name]['status'] == 'DONE':
-                # This one is finished
-                continue
-            else:
-                op = utils.response_to_operation(
-                        operations[obj.name],
-                        utils.get_gcp_config(),
-                        logger,
-                        )
-                operations[obj.name] = op.get()
-        else:
-            operations[obj.name] = getattr(obj, call)()
-
-    not_done = [k for k, v in operations.items() if v['status'] != 'DONE']
-    if not_done:
-        return ctx.operation.retry(
-                'Rules {} not yet {}d'.format(str(not_done), call))
-
-
-@operation
-@utils.throw_cloudify_exceptions
-def delete_security_group(**kwargs):
-    gcp_config = utils.get_gcp_config()
-    network = utils.get_network(ctx)
-    props = ctx.instance.runtime_properties
-
-    firewalls = [
-            FirewallRule(
-                gcp_config,
-                ctx.logger,
-                name=rule['name'],
-                network=network,
-                )
-            for rule in props['rules']]
-
-    return handle_multiple_calls(firewalls, 'delete', ctx.logger)

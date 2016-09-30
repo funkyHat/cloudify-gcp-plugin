@@ -363,16 +363,19 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         create: 
-          implementation: gcp_plugin.cloudify_gcp.compute.firewall.create_security_group
+          implementation: gcp_plugin.cloudify_gcp.compute.security_group.create
           inputs: 
             rules:
               default: { get_property: [SELF, rules] }
             name:
               default: { get_property: [SELF, name] }
         configure:
-          implementation: gcp_plugin.cloudify_gcp.compute.firewall.configure_security_group
+          implementation: gcp_plugin.cloudify_gcp.compute.security_group.configure
         delete:
-          implementation: gcp_plugin.cloudify_gcp.compute.firewall.delete_security_group
+          implementation: gcp_plugin.cloudify_gcp.compute.security_group.delete
+      cloudify.interfaces.validation:
+        create:
+          implementation: gcp_plugin.cloudify_gcp.compute.security_group.creation_validation
 
   cloudify.gcp.nodes.KeyPair:
     derived_from: cloudify.nodes.Root
