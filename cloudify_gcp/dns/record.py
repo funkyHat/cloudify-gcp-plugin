@@ -16,10 +16,10 @@
 from time import sleep
 
 from cloudify import ctx
-from cloudify.decorators import operation
 from cloudify.exceptions import NonRecoverableError
 
 from .. import utils
+from ..utils import operation
 from .dns import DNSZone
 
 
@@ -48,6 +48,32 @@ def wait_for_change_completion(dns_zone, response):
                 changeId=response['id'],
                 ).execute()
     return response
+
+
+def creation_validation(*args, **kwargs):
+    rels = ctx.instance.relationships
+
+    rel_types = [rel.type for rel in rels]
+
+    if (
+            'cloudify.gcp.relationships.'
+            'dns_record_contained_in_zone') not in rel_types:
+        raise NonRecoverableError('record must be contained in a zone')
+
+    for rel in utils.get_relationships(
+            rels,
+            filter_relationships=[
+                'cloudify.gcp.relationships.dns_record_connected_to_instance']
+            ):
+        instance_rels = utils.get_relationships(
+            rel.target.instance.relationships,
+            filter_relationships=[
+                'cloudify.gcp.relationships.instance_connected_to_ip',
+                ],
+            )
+        if len(instance_rels) < 1:
+            raise NonRecoverableError(
+                'target instance must have an external or staticIP address.')
 
 
 def traverse_item_heirarchy(root, keys):

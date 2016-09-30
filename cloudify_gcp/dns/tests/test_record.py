@@ -80,6 +80,12 @@ class TestGCPRecord(TestGCP):
                     'natIP': 'intellectual property',
                     }]}],
                 }
+        # rel_target is the Instance instance context. The instance itself must
+        # be connected to an external IP, so we need to mock its relationships
+        # too
+        rel_rel = Mock()
+        rel_rel.type = 'cloudify.gcp.relationships.instance_connected_to_ip'
+        rel.target.instance.relationships = [rel_rel]
         self.ctxmock.instance.relationships.append(rel)
 
         record.create(

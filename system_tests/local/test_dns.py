@@ -44,18 +44,26 @@ class GCPDNSTest(GCPTest, TestCase):
         # replace the resolver's nameservers
         res.nameservers = dns_ips
 
-        print('sleeping for 30s to allow NSs to catch up...')
-        sleep(30)
-
-        for subdomain, ip in [
-                ['direct-to-ip', self.outputs['ip']],
-                ['test', self.outputs['ip']],
-                ['literal-only', '10.9.8.7'],
-                ['names-are-relative', '127.3.4.5'],
-                ]:
-            self.assertEqual(
-                    ip,
-                    res.query(
-                        '{}.getcloudify.org.'.format(subdomain),
-                        'A',
-                        ).response.answer[0][0].address)
+        # we need to try several times to make sure it's not just Cloud DNS
+        # slowness getting synced, because DNS.
+        for i in range(12):
+            sleep(5)
+            try:
+                for subdomain, ip in [
+                        ['direct-to-ip', self.outputs['ip']],
+                        ['test', self.outputs['ip']],
+                        ['literal-only', '10.9.8.7'],
+                        ['names-are-relative', '127.3.4.5'],
+                        ]:
+                    self.assertEqual(
+                            ip,
+                            res.query(
+                                '{}.getcloudify.org.'.format(subdomain),
+                                'A',
+                                ).response.answer[0][0].address)
+            except dns.resolver.NXDOMAIN as e:
+                print('attempt {}: {}'.format(i, e))
+            else:
+                break
+        else:
+            self.fail('failed to get the answer we wanted from the DNS query')
