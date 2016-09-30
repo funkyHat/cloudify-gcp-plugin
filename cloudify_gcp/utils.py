@@ -171,8 +171,8 @@ def async_operation():
             return ctx.operation.retry(
                     'Object not created yet: {}'.format(response['status']), 5)
         elif response['status'] == 'DONE':
-            del props['_operation']
-            props.pop('name', None)
+            for key in '_operation', 'name', 'selfLink':
+                props.pop(key, None)
             return True
         raise NonRecoverableError(
                 'Unknown status response from object creation')
