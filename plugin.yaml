@@ -246,23 +246,20 @@ node_types:
           Indicate whether the resource exists or if Cloudify should create the resource.
         type: boolean
         default: false
-      resource_id:
-        description: >
-          If "use_external_resource" is set to true, this field will be used as a name
-          of existing network that is referenced by this node.
-        default: ''
       name:
         default: ''
       region:
         description: >
           The region this subnet is in. See https://cloud.google.com/compute/docs/regions-zones/regions-zones
         type: string
+        default: ''
       subnet:
         description: >
           The subnet, denoted in CIDR form (i.e. '10.8.0.0/20')
           Subnets must be unique and non-overlapping within a project.
           See https://cloud.google.com/compute/docs/subnetworks#networks_and_subnetworks
         type: string
+        default: ''
       gcp_config:
         description: >
           A dictionary of values to pass to authenticate with the Google Cloud Platform API.

@@ -176,11 +176,22 @@ def creation_validation(**kwargs):
     types = ('cloudify.gcp.relationships.contained_in_network',
              'cloudify.gcp.nodes.Network')
     rels = utils.get_relationships(ctx, *types)
+
     if len(rels) != 1:
         raise NonRecoverableError(
                 "SubNetwork must be contained in a '{1}' using the '{0}' "
                 "relationship".format(*types))
-    network = rels[0].target
-    if network.node.properties['auto_subnets']:
-        raise NonRecoverableError(
-            "Custom Subnets are not supported on auto_subnets Networks")
+
+    if not ctx.node.properties['use_external_resource']:
+        network = rels[0].target
+        if network.node.properties['auto_subnets']:
+            raise NonRecoverableError(
+                "Custom Subnets are not supported on auto_subnets Networks")
+
+        # If the subnet is an external resource then specifying the region &
+        # subnet range is not necessary
+        if not all(
+                ctx.node.properties[x]
+                for x
+                in ('region', 'subnet')):
+            raise NonRecoverableError("region & subnet must be supplied")
