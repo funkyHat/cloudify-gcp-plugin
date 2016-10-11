@@ -23,11 +23,6 @@ node_types:
           or if Cloudify should create new resource (false).
         type: boolean
         default: false
-      resource_id:
-        description: >
-          If "use_external_resource" is set to true, this field will be used as a name
-          of existing instance that is referenced by this node.
-        default: ''
       gcp_config:
         description: >
           A dictionary of values to pass to authenticate with the GCP API.
@@ -134,11 +129,6 @@ node_types:
           or if Cloudify should create new resource (false).
         type: boolean
         default: false
-      resource_id:
-        description: >
-          If "use_external_resource" is set to true, this field will be used as a name
-          of existing instance group that is referenced by this node.
-        default: ''
       gcp_config:
         description: >
           A dictionary of values to pass to authenticate with the GCP API.
@@ -173,11 +163,6 @@ node_types:
           Indicate whether the resource exists or if Cloudify should create the resource.
         type: boolean
         default: false
-      resource_id:
-        description: >
-          If "use_external_resource" is set to true, this field will be used as a name
-          of existing volume that is referenced by this node.
-        default: ''
       image:
         description: >
           The image of the Volume.
@@ -218,11 +203,6 @@ node_types:
           Indicate whether the resource exists or if Cloudify should create the resource.
         type: boolean
         default: false
-      resource_id:
-        description: >
-          If "use_external_resource" is set to true, this field will be used as a name
-          of existing network that is referenced by this node.
-        default: ''
       name:
         default: ''
       auto_subnets:
@@ -343,11 +323,6 @@ node_types:
           Indicate whether the resource exists or if Cloudify should create the resource.
         type: boolean
         default: false
-      resource_id:
-        description: >
-          If "use_external_resource" is set to true, this field will be used as a name
-          of existing firewall rule that is referenced by this node.
-        default: ''
       name:
         description: >
           Optional security group name. By default it will be network name
@@ -505,11 +480,6 @@ node_types:
           it will be reserved static IP address.
         type: boolean
         default: false
-      resource_id:
-        description: >
-          If "use_external_resource" is set to true, this field will be used as a name
-          of existing static ip that is referenced by this node.
-        default: ''
       gcp_config:
         description: >
           A dictionary of values to pass to authenticate with the GCP API.
@@ -556,11 +526,6 @@ node_types:
           Indicate whether the resource exists or if Cloudify should create the resource.
         type: boolean
         default: false
-      resource_id:
-        description: >
-          If "use_external_resource" is set to true, this field will be used as a name
-          of existing image that is referenced by this node.
-        default: ''
       gcp_config:
         description: >
           A dictionary of values to pass to authenticate with the GCP API.
@@ -590,11 +555,6 @@ node_types:
           or if Cloudify should create new resource (false).
         type: boolean
         default: false
-      resource_id:
-        description: >
-          If "use_external_resource" is set to true, this field will be used as a name
-          of existing health check that is referenced by this node.
-        default: ''
       gcp_config:
         description: >
           A dictionary of values to pass to authenticate with the GCP API.
@@ -639,11 +599,6 @@ node_types:
           or if Cloudify should create new resource (false).
         type: boolean
         default: false
-      resource_id:
-        description: >
-          If "use_external_resource" is set to true, this field will be used as a name
-          of existing backend service that is referenced by this node.
-        default: ''
       gcp_config:
         description: >
           A dictionary of values to pass to authenticate with the GCP API.
@@ -686,11 +641,6 @@ node_types:
           or if Cloudify should create new resource (false).
         type: boolean
         default: false
-      resource_id:
-        description: >
-          If "use_external_resource" is set to true, this field will be used as a name
-          of existing URL map that is referenced by this node.
-        default: ''
       gcp_config:
         description: >
           A dictionary of values to pass to authenticate with the GCP API.
@@ -726,11 +676,6 @@ node_types:
           or if Cloudify should create new resource (false).
         type: boolean
         default: false
-      resource_id:
-        description: >
-          If "use_external_resource" is set to true, this field will be used as a name
-          of existing target proxy that is referenced by this node.
-        default: ''
       gcp_config:
         description: >
           A dictionary of values to pass to authenticate with the GCP API.
@@ -783,11 +728,6 @@ node_types:
           or if Cloudify should create new resource (false).
         type: boolean
         default: false
-      resource_id:
-        description: >
-          If "use_external_resource" is set to true, this field will be used as a name
-          of existing SSL certificate that is referenced by this node.
-        default: ''
       gcp_config:
         description: >
           A dictionary of values to pass to authenticate with the GCP API.
@@ -834,11 +774,6 @@ node_types:
           or if Cloudify should create new resource (false).
         type: boolean
         default: false
-      resource_id:
-        description: >
-          If "use_external_resource" is set to true, this field will be used as a name
-          of existing global forwarding rule that is referenced by this node.
-        default: ''
       gcp_config:
         description: >
           A dictionary of values to pass to authenticate with the GCP API.
