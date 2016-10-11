@@ -173,6 +173,9 @@ def delete(**kwargs):
 
 
 def creation_validation(**kwargs):
+    if not ctx.node.properties['region']:
+        raise NonRecoverableError("region must be supplied")
+
     types = ('cloudify.gcp.relationships.contained_in_network',
              'cloudify.gcp.nodes.Network')
     rels = utils.get_relationships(ctx, *types)
@@ -188,10 +191,7 @@ def creation_validation(**kwargs):
             raise NonRecoverableError(
                 "Custom Subnets are not supported on auto_subnets Networks")
 
-        # If the subnet is an external resource then specifying the region &
+        # If the subnet is an external resource then specifying the
         # subnet range is not necessary
-        if not all(
-                ctx.node.properties[x]
-                for x
-                in ('region', 'subnet')):
-            raise NonRecoverableError("region & subnet must be supplied")
+        if not ctx.node.properties['subnet']:
+            raise NonRecoverableError("subnet must be supplied")

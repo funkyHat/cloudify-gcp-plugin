@@ -23,7 +23,12 @@ from ...tests import TestGCP
 
 @patch('cloudify_gcp.gcp.ServiceAccountCredentials.from_json_keyfile_dict')
 @patch('cloudify_gcp.gcp.build')
-class TestGCPNetwork(TestGCP):
+class TestGCPSubNetwork(TestGCP):
+
+    def setUp(self):
+        super(TestGCPSubNetwork, self).setUp()
+
+        self.ctxmock.node.properties['region'] = 'Bukit Bintang'
 
     def test_create(self, mock_build, *args):
         rel = Mock()
@@ -36,6 +41,10 @@ class TestGCPNetwork(TestGCP):
                 'selfLink': 'Look at me!',
                 }
         self.ctxmock.instance.relationships.append(rel)
+        self.ctxmock.node.properties.update({
+            'use_external_resource': False,
+            'subnet': 'Toki Tori',
+            })
 
         subnetwork.create(
                 name='subnet name',
@@ -74,6 +83,7 @@ class TestGCPNetwork(TestGCP):
                 'selfLink': 'Look at me!',
                 }
         self.ctxmock.instance.relationships.append(rel)
+        self.ctxmock.node.properties['use_external_resource'] = False
 
         with self.assertRaises(NonRecoverableError) as e:
             subnetwork.create(
