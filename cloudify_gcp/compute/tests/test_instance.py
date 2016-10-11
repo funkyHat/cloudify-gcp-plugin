@@ -88,6 +88,7 @@ class TestGCPInstance(TestGCP):
                 self.ctxmock.instance.runtime_properties
                 )
 
+        # Simulate the operation being complete:
         mock_build().instances().get().execute.return_value = {
                 'you pass': 'the test',
                 }
@@ -95,6 +96,7 @@ class TestGCPInstance(TestGCP):
                 'status': 'DONE',
                 }
 
+        # And the second time around create() should update runtime_properties
         instance.create(
                 'instance_type',
                 'image_id',
