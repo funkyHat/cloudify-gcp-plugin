@@ -292,6 +292,49 @@ node_types:
         create:
           implementation: gcp_plugin.cloudify_gcp.compute.subnetwork.creation_validation
 
+  cloudify.gcp.nodes.Route:
+    derived_from: cloudify.nodes.Router
+    properties:
+      dest_range:
+        description: >
+          The outgoing range that this route will handle
+      name:
+        default: ''
+      tags:
+        description: >
+          Instance tags that this route will be applied to
+        default: []
+      next_hop:
+        description: >
+          The Instance, IP or VpnTunnel which will handle the matching packets
+        default: ''
+      priority:
+        default: 1000
+      gcp_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Google Cloud Platform API.
+        default: {}
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: gcp_plugin.cloudify_gcp.compute.route.create
+          inputs:
+            name:
+              default: { get_property: [SELF, name] }
+            dest_range:
+              default: { get_property: [SELF, dest_range] }
+            tags:
+              default: { get_property: [SELF, tags] }
+            next_hop:
+              default: { get_property: [SELF, next_hop] }
+            priority:
+              default: { get_property: [SELF, priority] }
+        delete:
+          implementation: gcp_plugin.cloudify_gcp.compute.route.delete
+          inputs:
+            name:
+              default: { get_attribute: [SELF, name] }
+
   cloudify.gcp.nodes.FirewallRule:
     derived_from: cloudify.nodes.Root
     properties:
