@@ -12,7 +12,6 @@ inputs:
 
   image_id:
     default: https://www.googleapis.com/compute/v1/projects/centos-cloud/global/images/centos-7-v20160803
-    required: true
 
 
 dsl_definitions:

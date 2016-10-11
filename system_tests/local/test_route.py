@@ -24,7 +24,6 @@ class GCPRouteTest(GCPTest, TestCase):
     inputs = (
             'project',
             'gcp_auth',
-            'image_id',
             )
 
     def assertions(self):
