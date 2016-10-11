@@ -1115,6 +1115,9 @@ relationships:
   cloudify.gcp.relationships.dns_record_connected_to_instance:
     derived_from: cloudify.relationships.connected_to
 
+  cloudify.gcp.relationships.dns_record_connected_to_ip:
+    derived_from: cloudify.relationships.connected_to
+
   cloudify.gcp.relationships.contained_in_network:
     derived_from: cloudify.relationships.contained_in
 
