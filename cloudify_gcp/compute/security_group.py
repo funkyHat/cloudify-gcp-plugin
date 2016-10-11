@@ -19,6 +19,7 @@ from cloudify import ctx
 from cloudify.exceptions import NonRecoverableError
 
 from .. import utils
+from .. import constants
 from ..utils import operation
 from .firewall import FirewallRule
 
@@ -140,7 +141,8 @@ def handle_multiple_calls(objects, call, logger):
     not_done = [k for k, v in operations.items() if v['status'] != 'DONE']
     if not_done:
         return ctx.operation.retry(
-                'Rules {} not yet {}d'.format(str(not_done), call))
+                'Rules {} not yet {}d'.format(str(not_done), call),
+                constants.RETRY_DEFAULT_DELAY)
 
 
 @operation
