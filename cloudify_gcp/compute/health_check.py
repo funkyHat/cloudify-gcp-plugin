@@ -149,10 +149,10 @@ def create(name, health_check_type, additional_settings, **kwargs):
 @utils.retry_on_failure('Retrying deleting health check')
 @utils.throw_cloudify_exceptions
 def delete(**kwargs):
+    props = ctx.instance.runtime_properties
     gcp_config = utils.get_gcp_config()
     name = ctx.instance.runtime_properties.get('name')
-    health_check_type = ctx.instance.runtime_properties.get(
-        constants.HEALTH_CHECK_TYPE)
+    health_check_type = 'https' if 'https' in props['kind'] else 'http'
 
     if name:
         health_check = health_check_of_type(health_check_type,

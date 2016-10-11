@@ -65,7 +65,7 @@ class TestHealthCheck(TestGCP):
     def test_delete(self, mock_response, mock_build, *args):
         self.ctxmock.instance.runtime_properties.update({
             'name': 'delete_name',
-            'gcp_health_check_type': 'http',
+            'kind': 'compute#httpHealthCheck',
             })
 
         operation = MagicMock()
