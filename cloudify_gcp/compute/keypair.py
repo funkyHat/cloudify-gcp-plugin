@@ -50,7 +50,7 @@ class KeyPair(GoogleCloudPlatform):
         """
         super(KeyPair, self).__init__(config, logger, None)
         self.user = user
-        self.private_key_path = private_key_path
+        self.private_key_path = os.path.expanduser(private_key_path)
         self.public_key_path = public_key_path
         self.public_key = ''
         self.private_key = ''
@@ -145,7 +145,8 @@ def create(user,
 def create_keypair(keypair):
     if utils.should_use_external_resource():
         keypair.private_key = ctx.get_resource(keypair.private_key_path)
-        keypair.public_key = ctx.get_resource(keypair.public_key_path)
+        keypair.public_key = ctx.get_resource(
+                os.path.expanduser(keypair.public_key_path))
     else:
         keypair.create()
 
