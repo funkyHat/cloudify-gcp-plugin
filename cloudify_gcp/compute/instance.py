@@ -332,14 +332,17 @@ def create(instance_type,
     gcp_config = utils.get_gcp_config()
 
     script = ''
-    if not startup_script:
-        startup_script = ctx.instance.runtime_properties.get('startup_script')
 
+    if startup_script:
+        if startup_script.get('type') == 'file':
+            script = ctx.get_resource(startup_script.get('script'))
+        elif startup_script.get('type') == 'string':
+            script = startup_script.get('script')
+        else:
+            raise NonRecoverableError(
+                'invalid script type: {}'.format(startup_script.get('type')))
     ctx.logger.info('The script is {0}'.format(str(startup_script)))
-    if startup_script and startup_script.get('type') == 'file':
-        script = ctx.get_resource(startup_script.get('script'))
-    elif startup_script and startup_script.get('type') == 'string':
-        script = startup_script.get('script')
+
     ssh_keys = get_ssh_keys()
 
     network, subnetwork = utils.get_net_and_subnet(ctx)

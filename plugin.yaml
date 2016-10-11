@@ -76,15 +76,26 @@ node_types:
           'https://www.googleapis.com/auth/devstorage.read_write',
           'https://www.googleapis.com/auth/logging.write'
         default: []
+      startup_script:
+        description: >
+          A script which will be run when the Instance is first started
+          example:
+            type: string
+            script: |
+              yum install some stuff
+              systemctl start it
+          or:
+            type: file
+            script: <path to script file>
+        default:
+          ''
     interfaces:
       cloudify.interfaces.lifecycle:
         configure:
           implementation: gcp_plugin.cloudify_gcp.compute.instance.create
           inputs:
             startup_script:
-              default:
-                  type: ''
-                  string: ''
+              default: { get_property: [SELF, startup_script]}
             external_ip:
               default: false
             instance_type:
