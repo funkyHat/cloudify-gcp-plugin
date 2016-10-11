@@ -157,7 +157,7 @@ def async_operation():
     props = ctx.instance.runtime_properties
     response = props.get('_operation', None)
 
-    if should_use_external_resource() and props.get('name'):
+    if should_use_external_resource():
         return True
 
     if response:
