@@ -58,6 +58,7 @@ class HealthCheck(GoogleCloudPlatform):
         }
         return self._gcp_health_checks().get(**kwargs).execute()
 
+    @utils.async_operation(get=True)
     @check_response
     def create(self):
         return self._gcp_health_checks().insert(
@@ -68,6 +69,7 @@ class HealthCheck(GoogleCloudPlatform):
     def list(self):
         return self._gcp_health_checks().list(project=self.project).execute()
 
+    @utils.async_operation()
     @check_response
     def delete(self):
         kwargs = {
@@ -125,7 +127,6 @@ class HttpsHealthCheck(HealthCheck):
 @operation
 @utils.throw_cloudify_exceptions
 def create(name, health_check_type, additional_settings, **kwargs):
-    props = ctx.instance.runtime_properties
     name = utils.get_final_resource_name(name)
     gcp_config = utils.get_gcp_config()
     health_check = health_check_of_type(
@@ -135,14 +136,7 @@ def create(name, health_check_type, additional_settings, **kwargs):
             name=name,
             additional_settings=additional_settings)
 
-    if utils.async_operation():
-        props.update(health_check.get())
-    else:
-        response = utils.create(health_check)
-        props['_operation'] = response
-        ctx.operation.retry(
-                'HealthCheck creation started',
-                constants.RETRY_DEFAULT_DELAY)
+    utils.create(health_check)
 
 
 @operation
@@ -154,16 +148,12 @@ def delete(**kwargs):
     name = ctx.instance.runtime_properties.get('name')
     health_check_type = 'https' if 'https' in props['kind'] else 'http'
 
-    if name:
-        health_check = health_check_of_type(health_check_type,
-                                            config=gcp_config,
-                                            logger=ctx.logger,
-                                            name=name)
+    health_check = health_check_of_type(health_check_type,
+                                        config=gcp_config,
+                                        logger=ctx.logger,
+                                        name=name)
 
-        if not utils.async_operation():
-            response = utils.delete_if_not_external(health_check)
-            ctx.instance.runtime_properties['_operation'] = response
-            ctx.operation.retry('HealthCheck deletion started')
+    utils.delete_if_not_external(health_check)
 
 
 def health_check_of_type(health_check_type, **kwargs):

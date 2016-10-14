@@ -17,7 +17,6 @@ from cloudify import ctx
 from cloudify.decorators import operation
 
 from .. import utils
-from .. import constants
 from ..gcp import check_response
 from ..gcp import GoogleCloudPlatform
 
@@ -74,6 +73,7 @@ class Route(GoogleCloudPlatform):
                 self.hop_type = 'nextHopGateway'
                 self.hop_dest = 'global/gateways/default-internet-gateway'
 
+    @utils.async_operation(get=True)
     @check_response
     def create(self):
         """
@@ -88,6 +88,7 @@ class Route(GoogleCloudPlatform):
                 project=self.project,
                 body=self.to_dict()).execute()
 
+    @utils.async_operation()
     @check_response
     def delete(self):
         """
@@ -146,6 +147,7 @@ def create(dest_range, name, tags, next_hop, priority, **kwargs):
     gcp_config = utils.get_gcp_config()
     name = utils.get_final_resource_name(name)
     network = utils.get_network(ctx)
+
     route = Route(
             config=gcp_config,
             logger=ctx.logger,
@@ -156,14 +158,8 @@ def create(dest_range, name, tags, next_hop, priority, **kwargs):
             next_hop=next_hop,
             priority=priority,
             )
-    if utils.async_operation():
-        ctx.instance.runtime_properties.update(route.get())
-    else:
-        response = utils.create(route)
-        ctx.instance.runtime_properties['_operation'] = response
-        ctx.operation.retry(
-                'Route creation started',
-                constants.RETRY_DEFAULT_DELAY)
+
+    utils.create(route)
 
 
 @operation
@@ -185,9 +181,4 @@ def delete(name=None, **kwargs):
             network,
             )
 
-    if not utils.async_operation():
-        response = utils.delete_if_not_external(route)
-        ctx.instance.runtime_properties['_operation'] = response
-        ctx.operation.retry(
-                'Route deletion started',
-                constants.RETRY_DEFAULT_DELAY)
+    utils.delete_if_not_external(route)

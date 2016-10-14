@@ -84,6 +84,7 @@ class Instance(GoogleCloudPlatform):
         self.subnetwork = subnetwork
         self.can_ip_forward = can_ip_forward
 
+    @utils.async_operation(get=True)
     @check_response
     def create(self):
         """
@@ -95,11 +96,21 @@ class Instance(GoogleCloudPlatform):
         :raise: GCPError if there is any problem with startup script file:
         e.g. the file is not under the given path or it has wrong permissions
         """
+
+        if not utils.is_manager_instance():
+            add_to_security_groups(self)
+        disk = ctx.instance.runtime_properties.get(constants.DISK)
+        if disk:
+            self.disks = [disk]
+        if not self.disks and not self.image:
+            raise NonRecoverableError("A disk image ID must be provided")
+
         return self.discovery.instances().insert(
             project=self.project,
             zone=basename(self.zone),
             body=self.to_dict()).execute()
 
+    @utils.async_operation()
     @check_response
     def delete(self):
         """
@@ -377,22 +388,8 @@ def create(instance_type,
             zone=zone,
             can_ip_forward=can_ip_forward,
             )
-    if not utils.is_manager_instance():
-        add_to_security_groups(instance)
-    disk = props.get(constants.DISK)
-    if disk:
-        instance.disks = [disk]
-    if not instance.disks and not instance.image:
-        raise NonRecoverableError("A disk image ID must be provided")
 
-    if utils.async_operation():
-        props.update(instance.get())
-    else:
-        response = utils.create(instance)
-        props['_operation'] = response
-        ctx.operation.retry(
-                'Instance creation started',
-                constants.RETRY_DEFAULT_DELAY)
+    utils.create(instance)
 
 
 @operation
@@ -423,11 +420,7 @@ def delete(name, zone, **kwargs):
                         )
     props.pop(constants.DISK, None)
 
-    if not utils.async_operation():
-        response = utils.delete_if_not_external(instance)
-        props['_operation'] = response
-        ctx.operation.retry('Instance is not yet deleted. Retrying:',
-                            constants.RETRY_DEFAULT_DELAY)
+    utils.delete_if_not_external(instance)
 
 
 @operation

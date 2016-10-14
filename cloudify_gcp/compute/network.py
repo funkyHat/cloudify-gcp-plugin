@@ -17,7 +17,6 @@ from cloudify import ctx
 from cloudify.decorators import operation
 
 from .. import utils
-from .. import constants
 from ..gcp import check_response
 from ..gcp import GoogleCloudPlatform
 
@@ -44,6 +43,7 @@ class Network(GoogleCloudPlatform):
         self.iprange = None
         self.auto_subnets = auto_subnets
 
+    @utils.async_operation(get=True)
     @check_response
     def create(self):
         """
@@ -57,6 +57,7 @@ class Network(GoogleCloudPlatform):
         return self.discovery.networks().insert(project=self.project,
                                                 body=self.to_dict()).execute()
 
+    @utils.async_operation()
     @check_response
     def delete(self):
         """
@@ -121,14 +122,7 @@ def create(name, auto_subnets, **kwargs):
             auto_subnets=auto_subnets,
             name=name)
 
-    if utils.async_operation():
-        ctx.instance.runtime_properties.update(network.get())
-    else:
-        response = utils.create(network)
-        ctx.instance.runtime_properties['_operation'] = response
-        ctx.operation.retry(
-                'Network creation started',
-                constants.RETRY_DEFAULT_DELAY)
+    utils.create(network)
 
 
 @operation
@@ -147,9 +141,4 @@ def delete(name=None, **kwargs):
             ctx.logger,
             name)
 
-    if not utils.async_operation():
-        response = utils.delete_if_not_external(network)
-        ctx.instance.runtime_properties['_operation'] = response
-        ctx.operation.retry(
-                'Network deletion started',
-                constants.RETRY_DEFAULT_DELAY)
+    utils.delete_if_not_external(network)

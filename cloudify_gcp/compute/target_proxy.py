@@ -48,12 +48,14 @@ class TargetProxy(GoogleCloudPlatform):
     def list(self):
         return self._gcp_target_proxies().list(project=self.project).execute()
 
+    @utils.async_operation(get=True)
     @check_response
     def create(self):
         return self._gcp_target_proxies().insert(
             project=self.project,
             body=self.to_dict()).execute()
 
+    @utils.async_operation()
     @check_response
     @utils.sync_operation
     def delete(self):
@@ -144,7 +146,6 @@ class TargetHttpsProxy(TargetProxy):
 @operation
 @utils.throw_cloudify_exceptions
 def create(name, target_proxy_type, url_map, ssl_certificate, **kwargs):
-    props = ctx.instance.runtime_properties
     name = utils.get_final_resource_name(name)
     gcp_config = utils.get_gcp_config()
     target_proxy = target_proxy_of_type(target_proxy_type,
@@ -153,15 +154,8 @@ def create(name, target_proxy_type, url_map, ssl_certificate, **kwargs):
                                         name=name,
                                         url_map=url_map,
                                         ssl_certificate=ssl_certificate)
-    # import pdb; pdb.set_trace()
-    if utils.async_operation():
-        props.update(target_proxy.get())
-    else:
-        response = utils.create(target_proxy)
-        props['_operation'] = response
-        ctx.operation.retry(
-                'TargetProxy creation started',
-                constants.RETRY_DEFAULT_DELAY)
+
+    utils.create(target_proxy)
 
 
 @operation
@@ -181,11 +175,7 @@ def delete(**kwargs):
                                         logger=ctx.logger,
                                         name=name)
 
-    if not utils.async_operation():
-        response = utils.delete_if_not_external(target_proxy)
-        ctx.instance.runtime_properties['_operation'] = response
-        ctx.operation.retry('TargetProxy is not yet deleted. Retrying:',
-                            constants.RETRY_DEFAULT_DELAY)
+    utils.delete_if_not_external(target_proxy)
 
 
 def creation_validation(*args, **kwargs):

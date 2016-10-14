@@ -68,12 +68,14 @@ class BackendService(GoogleCloudPlatform):
         return self.discovery.backendServices().list(
             project=self.project).execute()
 
+    @utils.async_operation(get=True)
     @check_response
     def create(self):
         return self.discovery.backendServices().insert(
             project=self.project,
             body=self.to_dict()).execute()
 
+    @utils.async_operation()
     @check_response
     def delete(self):
         return self.discovery.backendServices().delete(
@@ -107,7 +109,6 @@ class BackendService(GoogleCloudPlatform):
 @operation
 @utils.throw_cloudify_exceptions
 def create(name, health_check, additional_settings, **kwargs):
-    props = ctx.instance.runtime_properties
     name = utils.get_final_resource_name(name)
     gcp_config = utils.get_gcp_config()
     backend_service = BackendService(gcp_config,
@@ -116,13 +117,7 @@ def create(name, health_check, additional_settings, **kwargs):
                                      health_check,
                                      additional_settings)
 
-    if utils.async_operation():
-        props.update(backend_service.get())
-    else:
-        response = utils.create(backend_service)
-        props['_operation'] = response
-        ctx.operation.retry('BackendService is not yet created. Retrying:',
-                            constants.RETRY_DEFAULT_DELAY)
+    utils.create(backend_service)
 
 
 @operation
@@ -132,14 +127,10 @@ def delete(**kwargs):
     gcp_config = utils.get_gcp_config()
     name = ctx.instance.runtime_properties.get('name')
 
-    if not utils.async_operation():
-        backend_service = BackendService(gcp_config,
-                                         ctx.logger,
-                                         name=name)
-        response = utils.delete_if_not_external(backend_service)
-        ctx.instance.runtime_properties['_operation'] = response
-        ctx.operation.retry('BackendService is not yet deleted. Retrying:',
-                            constants.RETRY_DEFAULT_DELAY)
+    backend_service = BackendService(gcp_config,
+                                     ctx.logger,
+                                     name=name)
+    utils.delete_if_not_external(backend_service)
 
 
 @operation

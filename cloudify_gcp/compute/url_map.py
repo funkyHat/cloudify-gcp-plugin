@@ -17,7 +17,6 @@ from cloudify import ctx
 from cloudify.exceptions import NonRecoverableError
 
 from .. import utils
-from .. import constants
 from ..utils import operation
 from cloudify_gcp.gcp import (
         check_response,
@@ -55,12 +54,14 @@ class UrlMap(GoogleCloudPlatform):
     def list(self):
         return self.discovery.urlMaps().list(project=self.project).execute()
 
+    @utils.async_operation(get=True)
     @check_response
     def create(self):
         return self.discovery.urlMaps().insert(
             project=self.project,
             body=self.to_dict()).execute()
 
+    @utils.async_operation()
     @check_response
     def delete(self):
         return self.discovery.urlMaps().delete(
@@ -71,7 +72,6 @@ class UrlMap(GoogleCloudPlatform):
 @operation
 @utils.throw_cloudify_exceptions
 def create(name, default_service, **kwargs):
-    props = ctx.instance.runtime_properties
     name = utils.get_final_resource_name(name)
     gcp_config = utils.get_gcp_config()
     url_map = UrlMap(gcp_config,
@@ -79,13 +79,7 @@ def create(name, default_service, **kwargs):
                      name,
                      default_service)
 
-    if utils.async_operation():
-        props.update(url_map.get())
-    else:
-        response = utils.create(url_map)
-        props['_operation'] = response
-        ctx.operation.retry('UrlMap is not yet created. Retrying:',
-                            constants.RETRY_DEFAULT_DELAY)
+    utils.create(url_map)
 
 
 def creation_validation(*args, **kwargs):
@@ -103,11 +97,9 @@ def creation_validation(*args, **kwargs):
 def delete(**kwargs):
     gcp_config = utils.get_gcp_config()
     name = ctx.instance.runtime_properties.get('name')
-    if name:
-        url_map = UrlMap(gcp_config,
-                         ctx.logger,
-                         name=name)
-        if not utils.async_operation():
-            utils.delete_if_not_external(url_map)
-            ctx.operation.retry('UrlMap is not yet deleted. Retrying:',
-                                constants.RETRY_DEFAULT_DELAY)
+
+    url_map = UrlMap(gcp_config,
+                     ctx.logger,
+                     name=name)
+
+    utils.delete_if_not_external(url_map)

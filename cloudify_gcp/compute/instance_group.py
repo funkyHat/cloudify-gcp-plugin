@@ -68,6 +68,7 @@ class InstanceGroup(GoogleCloudPlatform):
             project=self.project,
             zone=self.zone).execute()
 
+    @utils.async_operation(get=True)
     @check_response
     def create(self):
         return self.discovery.instanceGroups().insert(
@@ -75,6 +76,7 @@ class InstanceGroup(GoogleCloudPlatform):
             zone=self.zone,
             body=self.to_dict()).execute()
 
+    @utils.async_operation()
     @check_response
     def delete(self):
         return self.discovery.instanceGroups().delete(
@@ -109,12 +111,7 @@ def create(name, named_ports, **kwargs):
                                    name=name,
                                    named_ports=named_ports)
 
-    if utils.async_operation():
-        ctx.instance.runtime_properties.update(instance_group.get())
-    else:
-        response = utils.create(instance_group)
-        ctx.instance.runtime_properties['_operation'] = response
-        ctx.operation.retry('InstanceGroup creation started')
+    utils.create(instance_group)
 
 
 @operation
@@ -124,13 +121,10 @@ def delete(**kwargs):
     gcp_config = utils.get_gcp_config()
     name = ctx.instance.runtime_properties.get('name')
 
-    if name:
-        if not utils.async_operation():
-            instance_group = InstanceGroup(gcp_config,
-                                           ctx.logger,
-                                           name=name)
-            response = utils.delete_if_not_external(instance_group)
-            ctx.instance.runtime_properties['_operation'] = response
+    instance_group = InstanceGroup(gcp_config,
+                                   ctx.logger,
+                                   name=name)
+    utils.delete_if_not_external(instance_group)
 
 
 @operation

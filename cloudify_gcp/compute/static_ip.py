@@ -65,12 +65,14 @@ class StaticIP(GoogleCloudPlatform):
             address=self.name,
             **self._common_kwargs()).execute()
 
+    @utils.async_operation(get=True)
     @check_response
     def create(self):
         return self._get_resource_type().insert(
             body=self.to_dict(),
             **self._common_kwargs()).execute()
 
+    @utils.async_operation()
     @check_response
     def delete(self):
         return self._get_resource_type().delete(
@@ -82,7 +84,6 @@ class StaticIP(GoogleCloudPlatform):
 @utils.throw_cloudify_exceptions
 def create(name, region=None, **kwargs):
     name = utils.get_final_resource_name(name)
-    props = ctx.instance.runtime_properties
     gcp_config = utils.get_gcp_config()
 
     if not region and ctx.node.type == 'cloudify.gcp.nodes.StaticIP':
@@ -94,14 +95,7 @@ def create(name, region=None, **kwargs):
                          region=region,
                          )
 
-    if utils.async_operation():
-        props.update(static_ip.get())
-    else:
-        response = utils.create(static_ip)
-        props['_operation'] = response
-        ctx.operation.retry(
-                'IP creation started',
-                constants.RETRY_DEFAULT_DELAY/10)
+    utils.create(static_ip)
 
 
 @operation
@@ -120,11 +114,7 @@ def delete(**kwargs):
                          region=region,
                          )
 
-    if not utils.async_operation():
-        response = utils.delete_if_not_external(static_ip)
-        ctx.instance.runtime_properties['_operation'] = response
-        ctx.operation.retry('Instance is not yet deleted. Retrying:',
-                            constants.RETRY_DEFAULT_DELAY/10)
+    utils.delete_if_not_external(static_ip)
 
 
 def get_reserved_ip_address(static_ip):

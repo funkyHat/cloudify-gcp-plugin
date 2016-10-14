@@ -19,7 +19,6 @@ from cloudify import ctx
 from cloudify.exceptions import NonRecoverableError
 
 from .. import utils
-from .. import constants
 from ..utils import operation
 from ..gcp import check_response
 from ..gcp import GoogleCloudPlatform
@@ -52,6 +51,7 @@ class SubNetwork(GoogleCloudPlatform):
         self.subnet = subnet
         self.network = network
 
+    @utils.async_operation(get=True)
     @check_response
     def create(self):
         """
@@ -67,6 +67,7 @@ class SubNetwork(GoogleCloudPlatform):
                 region=self.region,
                 body=self.to_dict()).execute()
 
+    @utils.async_operation()
     @check_response
     def delete(self):
         """
@@ -143,14 +144,7 @@ def create(name, region, subnet, **kwargs):
             network.runtime_properties['selfLink'],
             )
 
-    if utils.async_operation():
-        ctx.instance.runtime_properties.update(subnetwork.get())
-    else:
-        response = utils.create(subnetwork)
-        ctx.instance.runtime_properties['_operation'] = response
-        ctx.operation.retry(
-                'SubNetwork creation started',
-                constants.RETRY_DEFAULT_DELAY)
+    utils.create(subnetwork)
 
 
 @operation
@@ -164,12 +158,8 @@ def delete(**kwargs):
             name=name,
             region=ctx.instance.runtime_properties['region']
             )
-    if not utils.async_operation():
-        response = utils.delete_if_not_external(subnetwork)
-        ctx.instance.runtime_properties['_operation'] = response
-        ctx.operation.retry(
-                'SubNetwork deletion started',
-                constants.RETRY_DEFAULT_DELAY)
+
+    utils.delete_if_not_external(subnetwork)
 
 
 def creation_validation(**kwargs):
