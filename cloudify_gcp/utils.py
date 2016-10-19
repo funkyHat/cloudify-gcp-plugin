@@ -114,7 +114,6 @@ def create_resource(func):
         if should_use_external_resource():
             try:
                 resource.body = resource.get()
-                resource.update_model()
             except HttpError as error:
                 if is_missing_resource_error(error):
                     name = ctx.node.properties.get(constants.RESOURCE_ID)

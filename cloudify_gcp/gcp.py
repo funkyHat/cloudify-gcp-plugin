@@ -122,12 +122,6 @@ class GoogleCloudPlatform(object):
             project=self.project).execute()
         return metadata['commonInstanceMetadata']
 
-    def update_model(self):
-        """
-        Update instance model with response body.
-        """
-        pass
-
 
 class GCPError(Exception):
     """

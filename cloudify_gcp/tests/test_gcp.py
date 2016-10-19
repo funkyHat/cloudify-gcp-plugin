@@ -62,15 +62,6 @@ class TestGCP(unittest.TestCase):
                 mock_discovery().projects().get().execute().__getitem__(),
                 metadata)
 
-    @patch('cloudify_gcp.gcp.GoogleCloudPlatform.create_discovery')
-    @patch('cloudify_gcp.gcp.build')
-    def test_update_model(*args):
-        """This method is a no-op which is overridden by some subclasses"""
-        gcp.GoogleCloudPlatform(
-                config=MagicMock(),
-                logger=MagicMock(),
-                name='sally').update_model()
-
     def test_is_missing_resource_error(self):
         for exception, output in [
                 (None, False),
