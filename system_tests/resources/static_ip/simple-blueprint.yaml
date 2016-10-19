@@ -28,7 +28,7 @@ dsl_definitions:
 node_templates:
 
   static_ip:
-    type: cloudify.gcp.nodes.StaticIP
+    type: cloudify.gcp.nodes.Address
     properties:
       gcp_config: *gcp_config
 

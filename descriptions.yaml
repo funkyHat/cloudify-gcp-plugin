@@ -40,19 +40,23 @@ node_types:
 
       Unlike other cloud providers, users are dynamically created on Instances based on the username specified by the uploaded SSH key, so the public key text must include a username in the comment section (keys generated using `ssh-keygen` have this by default).
 
-  GlobalStaticIP:
+  GlobalAddress:
     description: |
       A GCP GlobalAddress.
 
-      GlobalStaticIP can only be used together with GlobalForwardingRule. If you want to connect a static IP to an Instance, use StaticIP instead.
+      GlobalAddress can only be used together with GlobalForwardingRule. If you want to connect a static IP to an Instance, use StaticIP instead.
+
+  StaticIP:
+    description: |
+      Alias for GlobalAddress for backward compatibility.
 
   GlobalForwardingRule:
     description: |
       A GCP GlobalForwardingRule.
 
-      Can only be used in conjunction with a GlobalStaticIP to set up HTTP and HTTPS forwarding.
+      Can only be used in conjunction with a GlobalAddress to set up HTTP and HTTPS forwarding.
 
-  StaticIP:
+  Address:
     description: >
       A GCP Address. This can be connected to an Instance using the
       `cloudify.gcp.relationships.instance_connected_to_ip` relationship type
@@ -63,7 +67,7 @@ node_types:
 
   BackendService:
     description: >
-      Part of the annoying chain of things you need to make a GlobalStaticIP work
+      Part of the annoying chain of things you need to make a GlobalAddress work
 
   FirewallRule:
     description: |

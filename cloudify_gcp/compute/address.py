@@ -25,11 +25,11 @@ from cloudify_gcp.gcp import GoogleCloudPlatform
 from cloudify_gcp.gcp import check_response
 
 
-class StaticIP(GoogleCloudPlatform):
+class Address(GoogleCloudPlatform):
     """
-    This class handles both StaticIP and GlobalStaticIP.
-    In the API these only differ in that StaticIP (i.e. `addresses`) requires a
-    region, while GlobalStaticIP (i.e. globalAddresses) does not accept one.
+    This class handles both Address and GlobalAddress.
+    In the API these only differ in that Address requires a
+    region, while GlobalAddress does not accept one.
     """
 
     def __init__(self,
@@ -38,7 +38,7 @@ class StaticIP(GoogleCloudPlatform):
                  name,
                  region=None,
                  ):
-        super(StaticIP, self).__init__(config, logger, name)
+        super(Address, self).__init__(config, logger, name)
         self.region = region
 
     def _get_resource_type(self):
@@ -48,7 +48,7 @@ class StaticIP(GoogleCloudPlatform):
 
     def to_dict(self):
         body = {
-            'description': 'Cloudify generated Static IP',
+            'description': 'Cloudify generated Address',
             'name': self.name
         }
         return body
@@ -86,16 +86,17 @@ def create(name, region=None, **kwargs):
     name = utils.get_final_resource_name(name)
     gcp_config = utils.get_gcp_config()
 
-    if not region and ctx.node.type == 'cloudify.gcp.nodes.StaticIP':
+    if not region and ctx.node.type == 'cloudify.gcp.nodes.Address':
         region = constants.ZONE_REGIONS[gcp_config['zone']]
 
-    static_ip = StaticIP(gcp_config,
-                         ctx.logger,
-                         name,
-                         region=region,
-                         )
+    address = Address(
+            gcp_config,
+            ctx.logger,
+            name,
+            region=region,
+            )
 
-    utils.create(static_ip)
+    utils.create(address)
 
 
 @operation
@@ -108,13 +109,14 @@ def delete(**kwargs):
     if region:
         region = basename(region)
 
-    static_ip = StaticIP(gcp_config,
-                         ctx.logger,
-                         name=props.get('name'),
-                         region=region,
-                         )
+    address = Address(
+            gcp_config,
+            ctx.logger,
+            name=props.get('name'),
+            region=region,
+            )
 
-    utils.delete_if_not_external(static_ip)
+    utils.delete_if_not_external(address)
 
 
 def get_reserved_ip_address(static_ip):

@@ -470,7 +470,7 @@ node_types:
           A dictionary of values to pass to authenticate with the GCP API.
         default: {}
 
-  cloudify.gcp.nodes.GlobalStaticIP:
+  cloudify.gcp.nodes.GlobalAddress:
     derived_from: cloudify.nodes.VirtualIP
     properties:
       use_external_resource:
@@ -492,15 +492,18 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
-          implementation: gcp_plugin.cloudify_gcp.compute.static_ip.create
+          implementation: gcp_plugin.cloudify_gcp.compute.address.create
           inputs:
             name:
               default: { get_property: [SELF, name]}
         delete:
-          implementation: gcp_plugin.cloudify_gcp.compute.static_ip.delete
+          implementation: gcp_plugin.cloudify_gcp.compute.address.delete
 
   cloudify.gcp.nodes.StaticIP:
-    derived_from: cloudify.gcp.nodes.GlobalStaticIP
+    derived_from: cloudify.gcp.nodes.GlobalAddress
+
+  cloudify.gcp.nodes.Address:
+    derived_from: cloudify.gcp.nodes.GlobalAddress
     properties:
       region:
         default: ''
@@ -511,7 +514,7 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
-          implementation: gcp_plugin.cloudify_gcp.compute.static_ip.create
+          implementation: gcp_plugin.cloudify_gcp.compute.address.create
           inputs:
             name:
               default: { get_property: [SELF, name]}

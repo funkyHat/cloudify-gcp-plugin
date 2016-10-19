@@ -15,25 +15,25 @@
 
 from mock import patch
 
-from .. import static_ip
+from .. import address
 from ...tests import TestGCP
 
 
 @patch('cloudify_gcp.gcp.ServiceAccountCredentials.from_json_keyfile_dict')
 @patch('cloudify_gcp.gcp.build')
-class TestStaticIP(TestGCP):
+class TestAddress(TestGCP):
 
     def setUp(self):
-        super(TestStaticIP, self).setUp()
+        super(TestAddress, self).setUp()
 
         self.ctxmock.node.properties['gcp_config']['zone'] = 'us-central1-b'
 
     def test_create(self, mock_build, *args):
-        static_ip.create('name', 'region')
+        address.create('name', 'region')
 
         mock_build().addresses().insert.assert_called_once_with(
                 body={
-                    'description': 'Cloudify generated Static IP',
+                    'description': 'Cloudify generated Address',
                     'name': 'name',
                     },
                 project='not really a project',
@@ -47,7 +47,7 @@ class TestStaticIP(TestGCP):
             'name': 'delete me',
             })
 
-        static_ip.delete()
+        address.delete()
 
         mock_build().addresses().delete.assert_called_once_with(
                 project='not really a project',
@@ -56,11 +56,11 @@ class TestStaticIP(TestGCP):
                 )
 
     def test_create_global(self, mock_build, *args):
-        static_ip.create('name', '')
+        address.create('name', '')
 
         mock_build().globalAddresses().insert.assert_called_once_with(
                 body={
-                    'description': 'Cloudify generated Static IP',
+                    'description': 'Cloudify generated Address',
                     'name': 'name',
                     },
                 project='not really a project',
@@ -71,7 +71,7 @@ class TestStaticIP(TestGCP):
             'name': 'delete me',
             })
 
-        static_ip.delete()
+        address.delete()
 
         mock_build().globalAddresses().delete.assert_called_once_with(
                 project='not really a project',
