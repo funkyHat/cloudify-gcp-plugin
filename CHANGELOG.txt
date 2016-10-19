@@ -1,32 +1,38 @@
 1.0.0
-    - new Cloud DNS support:
-        DNSZone
-            provides the DNS nameServers which you must enter with your domain
-            registrar as the `nameServers` attribute in runtime_properties
-        DNSRecord
-            represents a particular type & subnet (i.e.: [A|AAAA|MX] for www)
-    - New SubNetwork node type:
-        Connects to a Network node via contained_in_network relationship
-        The Network node must have auto_subnets set to false
-    - Network node type now suppors auto- and manual-subnet operation instead
-                        of legacy networks
-    - New Route node type:
-        https://cloud.google.com/compute/docs/networking#routing
-        https://cloud.google.com/compute/docs/reference/latest/routes
-        Supports nextHopIp (input directly as a parameter)
-                 nextHopInstance (connected_to Instance relationship)
-                 nextHopGateway (the default, uses the default route for the
-                                 network)
-    - Renamed old StaticIP node to GlobalStaticIP
-    - StaticIP now maps to a regional external address
-    - Node Instances which map directly to a GCP entity (most of them) now
-        store the entire GCP resource data in their runtime_properties.
-    - Removed `resource_id` property from node types which support
-      `use_external_resource`
-        Rationale:
-            Now that multiple regions and networks are supported, just
-            supplying the name isn't sufficient to uniquely or correctly
-            identify a node, so for consistency's sake it makes more sense to
-            retrieve the node based on the regular properties (e.g. name,
-            network, region).
-            GCP doesn't use IDs of resources for anything (API related)
+  - new Cloud DNS support:
+    DNSZone
+        provides the DNS nameServers which you must enter with your domain
+        registrar as the `nameServers` attribute in runtime_properties
+    DNSRecord
+        represents a particular type & subnet (i.e.: [A|AAAA|MX] for www)
+  - New SubNetwork node type:
+    Connects to a Network node via contained_in_network relationship
+    The Network node must have auto_subnets set to false
+  - Network node type now suppors auto- and manual-subnet operation instead
+                      of legacy networks
+  - New Route node type:
+    https://cloud.google.com/compute/docs/networking#routing
+    https://cloud.google.com/compute/docs/reference/latest/routes
+    Supports nextHopIp (input directly as a parameter)
+             nextHopInstance (connected_to Instance relationship)
+             nextHopGateway (the default, uses the default route for the
+                             network)
+  - New Address node type:
+    https://cloud.google.com/compute/docs/configure-instance-ip-addresses#reservedaddress
+    https://cloud.google.com/compute/docs/reference/latest/addresses
+  - GlobalAddress node type replaces StaticIP (StaticIP kept as an alias for
+              backward compatibility)
+    https://cloud.google.com/compute/docs/load-balancing/http/
+    https://cloud.google.com/compute/docs/reference/latest/globalAddresses
+    GlobalAddress nodes are only used together with HTTP load balancing.
+  - Node Instances which map directly to a GCP entity (most of them) now
+    store the entire GCP resource data in their runtime_properties.
+  - Removed `resource_id` property from node types which support
+    `use_external_resource`
+    Rationale:
+        Now that multiple regions and networks are supported, just
+        supplying the name isn't sufficient to uniquely or correctly
+        identify a node, so for consistency's sake it makes more sense to
+        retrieve the node based on the regular properties (e.g. name,
+        network, region).
+        GCP doesn't use IDs of resources for anything (API related)
