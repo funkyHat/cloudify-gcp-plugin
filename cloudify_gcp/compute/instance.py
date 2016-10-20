@@ -413,6 +413,9 @@ def delete(name, zone, **kwargs):
     props = ctx.instance.runtime_properties
     name = utils.get_final_resource_name(name)
 
+    if not zone:
+        zone = props['zone']
+
     instance = Instance(gcp_config,
                         ctx.logger,
                         name=name,
@@ -460,7 +463,7 @@ def add_external_ip(instance_name, zone, **kwargs):
     ip_node = ctx.target.node
 
     # Might be overridden by either `use_external_resource` or a connected
-    # StaticIP
+    # Address
     ip_address = ''
 
     instance = Instance(
@@ -478,7 +481,7 @@ def add_external_ip(instance_name, zone, **kwargs):
         if not ip_address:
             raise GCPError('{} is set, but ip_address is not set'
                            .format(constants.USE_EXTERNAL_RESOURCE))
-    elif ip_node.type == 'cloudify.gcp.nodes.StaticIP':
+    elif ip_node.type == 'cloudify.gcp.nodes.Address':
         ip_address = ctx.target.instance.runtime_properties['address']
 
     instance.add_access_config(ip_address)

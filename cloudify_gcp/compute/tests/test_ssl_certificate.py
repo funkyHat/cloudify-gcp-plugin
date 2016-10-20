@@ -35,6 +35,11 @@ class TestSslCertificate(TestGCP):
     def test_create(self, mock_response, mock_get_pem, mock_build, *args):
 
         operation = MagicMock()
+        operation.get.side_effect = [
+                {'status': 'PENDING'},
+                {'status': 'DONE'},
+                ]
+
         operation.has_finished.return_value = True
         mock_response.return_value = operation
 
@@ -62,9 +67,9 @@ class TestSslCertificate(TestGCP):
 
         mock_build().sslCertificates().insert.assert_called_with(
                 body={
-                    'privateKey': 'file: key data',
+                    'privateKey': 'text: key data',
                     'description': 'Cloudify generated SSL certificate',
-                    'certificate': 'file: cert data',
+                    'certificate': 'text: cert data',
                     'name': 'name',
                     },
                 project='not really a project',

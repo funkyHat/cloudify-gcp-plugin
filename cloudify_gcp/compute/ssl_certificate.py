@@ -57,13 +57,14 @@ class SslCertificate(GoogleCloudPlatform):
         return self.discovery.sslCertificates().list(
             project=self.project).execute()
 
+    @utils.async_operation(get=True)
     @check_response
-    @utils.sync_operation
     def create(self):
         return self.discovery.sslCertificates().insert(
             project=self.project,
             body=self.to_dict()).execute()
 
+    @utils.async_operation()
     @check_response
     def delete(self):
         return self.discovery.sslCertificates().delete(
@@ -84,9 +85,6 @@ def create(name, private_key, certificate, **kwargs):
                                      private_key=private_key_data,
                                      certificate=certificate_data)
     utils.create(ssl_certificate)
-    ctx.instance.runtime_properties['name'] = name
-    ctx.instance.runtime_properties[constants.SELF_URL] = \
-        ssl_certificate.get_self_url()
 
 
 @operation
@@ -100,8 +98,6 @@ def delete(**kwargs):
                                          logger=ctx.logger,
                                          name=name)
         utils.delete_if_not_external(ssl_certificate)
-        ctx.instance.runtime_properties.pop('name')
-        ctx.instance.runtime_properties.pop(constants.SELF_URL, None)
 
 
 def get_pem_data(resource_type, resource_data):

@@ -105,18 +105,20 @@ def create(name, region=None, **kwargs):
 def delete(**kwargs):
     gcp_config = utils.get_gcp_config()
     props = ctx.instance.runtime_properties
-    region = props.get('region')
-    if region:
-        region = basename(region)
 
-    address = Address(
-            gcp_config,
-            ctx.logger,
-            name=props.get('name'),
-            region=region,
-            )
+    if props.get('name'):
+        region = props.get('region')
+        if region:
+            region = basename(region)
 
-    utils.delete_if_not_external(address)
+        address = Address(
+                gcp_config,
+                ctx.logger,
+                name=props.get('name'),
+                region=region,
+                )
+
+        utils.delete_if_not_external(address)
 
 
 def get_reserved_ip_address(static_ip):

@@ -12,7 +12,7 @@
 #    * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta, abstractmethod, abstractproperty
 
 from cloudify import ctx
 from cloudify.exceptions import NonRecoverableError
@@ -62,6 +62,10 @@ class TargetProxy(GoogleCloudPlatform):
         self_data = self.gcp_get_dict()
         return self._gcp_target_proxies().delete(**self_data).execute()
 
+    @abstractproperty
+    def kind(self):
+        """The kind string which matches the resource from the API"""
+
     @abstractmethod
     def get_self_url(self):
         """Return URL component for the proxy"""
@@ -80,6 +84,8 @@ class TargetProxy(GoogleCloudPlatform):
 
 
 class TargetHttpProxy(TargetProxy):
+    kind = 'compute#targetHttpProxy'
+
     def __init__(self,
                  config,
                  logger,
@@ -110,6 +116,8 @@ class TargetHttpProxy(TargetProxy):
 
 
 class TargetHttpsProxy(TargetProxy):
+    kind = 'compute#targetHttpsProxy'
+
     def __init__(self,
                  config,
                  logger,
@@ -154,6 +162,7 @@ def create(name, target_proxy_type, url_map, ssl_certificate, **kwargs):
                                         name=name,
                                         url_map=url_map,
                                         ssl_certificate=ssl_certificate)
+    ctx.instance.runtime_properties['kind'] = target_proxy.kind
 
     utils.create(target_proxy)
 
@@ -170,12 +179,13 @@ def delete(**kwargs):
     else:
         target_proxy_type = 'https'
 
-    target_proxy = target_proxy_of_type(target_proxy_type,
-                                        config=gcp_config,
-                                        logger=ctx.logger,
-                                        name=name)
+    if name:
+        target_proxy = target_proxy_of_type(target_proxy_type,
+                                            config=gcp_config,
+                                            logger=ctx.logger,
+                                            name=name)
 
-    utils.delete_if_not_external(target_proxy)
+        utils.delete_if_not_external(target_proxy)
 
 
 def creation_validation(*args, **kwargs):

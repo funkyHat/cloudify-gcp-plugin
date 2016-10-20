@@ -28,11 +28,14 @@ from ...tests import TestGCP
 class TestForwardingRule(TestGCP):
 
     def test_create(self, mock_build, *args):
+        self.ctxmock.node.properties.update({
+            'target_proxy': 'walmart',
+            })
         forwarding_rule.create(
-                'name',
-                'target',
-                'range',
-                'ip',
+                name='name',
+                target_proxy='target',
+                port_range='range',
+                ip_address='ip',
                 )
 
         mock_build.assert_called_once()
