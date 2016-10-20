@@ -31,17 +31,23 @@ class GCPSimpleKeyPairTest(GCPTest, TestCase):
 
     def assertions(self):
 
-        print('Sleeping 30s to wait for IP address to be attached')
-        sleep(30)
-
-        hostname = subprocess.check_output([
-            'ssh',
-            '-i', 'gcp_systest.key',
-            '-o', 'UserKnownHostsFile=/dev/null',
-            '-o', 'StrictHostKeyChecking=no',
-            'keypair-user@{}'.format(self.outputs['ip']),
-            'hostname',
-            ])
+        for i in range(12):
+            sleep(5)
+            try:
+                hostname = subprocess.check_output([
+                    'ssh',
+                    '-i', 'gcp_systest.key',
+                    '-o', 'UserKnownHostsFile=/dev/null',
+                    '-o', 'StrictHostKeyChecking=no',
+                    'keypair-user@{}'.format(self.outputs['ip']),
+                    'hostname',
+                    ])
+            except subprocess.CalledProcessError as e:
+                print('attempt {}: {}'.format(i, e))
+            else:
+                break
+        else:
+            self.fail('failed to log in via SSH')
 
         self.assertEqual(
                 self.outputs['name'],
