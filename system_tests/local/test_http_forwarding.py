@@ -13,8 +13,8 @@
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 
-import subprocess
 from time import sleep
+from urllib2 import urlopen, HTTPError
 
 from cosmo_tester.framework.testenv import TestCase
 
@@ -30,5 +30,21 @@ class GCPHttpForwardingTest(GCPTest, TestCase):
             }
 
     def assertions(self):
+
+        for i in range(20):
+            sleep(5)
+            try:
+                text = urlopen('http://{}/'.format(
+                    self.outputs['ip_ip'])).read()
+
+                self.assertEqual(
+                        self.outputs['vm_name'],
+                        text.strip())
+            except (AssertionError, HTTPError):
+                pass
+            else:
+                break
+        else:
+            self.fail('tried too many times to get the page')
 
         assert False
