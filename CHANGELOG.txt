@@ -1,4 +1,4 @@
-1.0.0
+2.0.0
   - new Cloud DNS support:
     DNSZone
         provides the DNS nameServers which you must enter with your domain
