@@ -821,6 +821,9 @@ node_types:
               default: { get_property: [SELF, ip_address]}
         delete:
           implementation: gcp_plugin.cloudify_gcp.compute.forwarding_rule.delete
+      cloudify.interfaces.validation:
+        create:
+          implementation: gcp_plugin.cloudify_gcp.compute.forwarding_rule.creation_validation
 
   cloudify.gcp.nodes.DNSZone:
     derived_from: cloudify.nodes.Root

@@ -21,8 +21,8 @@ from cloudify.workflows import local
 from cloudify_cli import constants as cli_constants
 
 from cosmo_tester.framework.testenv import (
-        initialize_without_bootstrap,
         clear_environment,
+        initialize_without_bootstrap,
         )
 
 
@@ -40,12 +40,13 @@ class GCPTest(object):
     @abstractmethod
     def assertions(self):
         """This will be called after the deployment is finished.
+        Put your test assertions here.
         The deployment is uninstalled during test teardown"""
 
     @abstractproperty
     def blueprint_name(self):
         """The path to the blueprint file, relative to
-        `system_tests/local`
+        `system_tests/resources`
         """
 
     @abstractproperty
@@ -70,12 +71,9 @@ class GCPTest(object):
     def test_blueprint(self):
         blueprint = os.path.join(self.blueprints_path, self.blueprint_name)
 
-        if self.env.install_plugins:
-            self.logger.info('installing required plugins')
-            self.cfy.install_plugins_locally(
-                blueprint_path=blueprint)
-
         self.logger.info('Creating a new Network')
+
+        self.pre_install_hook()
 
         inputs = copy(self.ext_inputs)
 
@@ -103,3 +101,6 @@ class GCPTest(object):
         self.assertions()
 
         print('\n{}:test_blueprint succeded\n'.format(type(self).__name__))
+
+    def pre_install_hook(self):
+        "Override this if your test needs to do something before installing"
