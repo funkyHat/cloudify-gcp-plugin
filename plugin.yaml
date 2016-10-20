@@ -428,6 +428,8 @@ node_types:
           A dictionary of values to pass to authenticate with the Google Cloud Platform API.
         default: {}
       user:
+        description: >
+          The user account for this key. A corresponding user account will be created by GCP when the key is added to the Instance. This must be supplied for a non-external resource key. See https://cloud.google.com/compute/docs/instances/adding-removing-ssh-keys
         type: string
         default: ''
     interfaces:

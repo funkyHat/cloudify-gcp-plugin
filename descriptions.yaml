@@ -67,7 +67,8 @@ node_types:
 
   BackendService:
     description: >
-      Part of the annoying chain of things you need to make a GlobalAddress work
+      A group of Instances (contained within InstanceGroups) which can be used
+      as the backend for load balancing.
 
   FirewallRule:
     description: |
@@ -142,6 +143,9 @@ node_types:
           relationships:
             - type: cloudify.gcp.relationships.contained_in_network
               target: my_subnet
+
+      text: |
+        If you want to use an exsisting SubNetwork (`use_external_resource: true`) then you must supply the `name` and `region` properties. This is because SubNetwork names are not unique across the whole project, only within a region.
 
 
   Route:
@@ -228,7 +232,7 @@ node_types:
 
   UrlMap:
     description: |
-      I don't even know (TODO)
+      Maps URLs to BackendServices
 
   SslCertificate:
     description: |
