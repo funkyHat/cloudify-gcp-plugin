@@ -14,7 +14,6 @@ inputs:
 
   image_id:
     default: https://www.googleapis.com/compute/v1/projects/centos-cloud/global/images/centos-7-v20160803
-    required: true
 
 
 dsl_definitions:
@@ -27,7 +26,7 @@ dsl_definitions:
 
 node_templates:
   ip:
-    type: cloudify.gcp.nodes.StaticIP
+    type: cloudify.gcp.nodes.Address
     properties:
       gcp_config: *gcp_config
 
