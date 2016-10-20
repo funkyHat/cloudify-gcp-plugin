@@ -30,7 +30,7 @@ API_V1 = 'v1'
 API_BETA = 'beta'
 
 DISK = 'gcp_disk'
-GCP_ZONE = 'gcp_zone'
+GCP_ZONE = 'zone'
 HEALTH_CHECK_TYPE = 'gcp_health_check_type'
 TARGET_PROXY_TYPE = 'gcp_target_proxy_type'
 BACKENDS = 'gcp_backends'
