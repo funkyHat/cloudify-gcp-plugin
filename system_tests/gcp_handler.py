@@ -124,6 +124,18 @@ class CloudifyGCPInputsConfigReader(BaseCloudifyInputsConfigReader):
     def use_existing_agent_keypair(self):
         return self.config['use_existing_agent_keypair']
 
+    @property
+    def project(self):
+        return self.config['project']
+
+    @property
+    def gcp_auth(self):
+        return self.config['gcp_auth']
+
+    @property
+    def centos_7_image_user(self):
+        return 'centos'
+
 
 class GCPHandler(BaseHandler):
     CleanupContext = GCPCleanupContext
@@ -133,11 +145,14 @@ class GCPHandler(BaseHandler):
         credentials = self._client_credentials()
         return GCPConnection(**credentials)
 
+    def remove_keypairs_from_local_env(self, env):
+        """TODO: remove the keypairs"""
+
     @contextmanager
     def _handled_exception(self, resource_id, failed, resource_group):
         try:
             yield
-        except BaseException, ex:
+        except BaseException as ex:
             failed[resource_group][resource_id] = ex
 
 
