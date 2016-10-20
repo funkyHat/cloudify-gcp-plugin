@@ -1068,3 +1068,6 @@ relationships:
       cloudify.interfaces.validation:
         create:
           implementation: gcp_plugin.cloudify_gcp.compute.instance.validate_contained_in_network
+
+  cloudify.gcp.relationships.forwarding_rule_connected_to_target_proxy:
+    derived_from: cloudify.relationships.connected_to
