@@ -99,8 +99,6 @@ class Instance(GoogleCloudPlatform):
         e.g. the file is not under the given path or it has wrong permissions
         """
 
-        if not utils.is_manager_instance():
-            add_to_security_groups(self)
         disk = ctx.instance.runtime_properties.get(constants.DISK)
         if disk:
             self.disks = [disk]
@@ -576,13 +574,6 @@ def set_ip(instance, relationship=False):
     except (TypeError, KeyError):
         ctx.operation.retry(
                 'The instance has not yet created network interface', 10)
-
-
-def add_to_security_groups(instance):
-    provider_config = utils.get_manager_provider_config()
-    instance.tags.extend(
-        provider_config[constants.AGENTS_SECURITY_GROUP]
-        .get(constants.SOURCE_TAGS, {}))
 
 
 def get_ssh_keys():

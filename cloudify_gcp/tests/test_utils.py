@@ -162,13 +162,10 @@ class TestUtilsWithCTX(unittest.TestCase):
             raise_http(404)
 
     def test_get_agent_ssh_key_string(self, *args):
-        self.ctxmock.provider_context = {}
-
-        self.assertEqual('', utils.get_agent_ssh_key_string())
-
-        self.ctxmock.provider_context['resources'] = {
+        self.ctxmock.provider_context = {
+            'resources': {
                 'cloudify_agent': {
                     'public_key': '🗝',
-                    }}
+                    }}}
 
         self.assertEqual('🗝', utils.get_agent_ssh_key_string())

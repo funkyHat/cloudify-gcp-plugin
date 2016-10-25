@@ -18,6 +18,7 @@ import string
 import time
 from copy import deepcopy
 from functools import wraps
+from subprocess import check_output
 from os.path import basename, expanduser
 from abc import ABCMeta, abstractmethod
 
@@ -232,15 +233,15 @@ def get_gcp_config():
     else:
         try:
             config = ctx.provider_context['resources'][constants.GCP_CONFIG]
-        except KeyError:
-            try:
-                with open(expanduser(constants.GCP_DEFAULT_CONFIG_PATH)) as f:
-                    gcp_config = yaml.load(f)
-            except OSError:
-                raise NonRecoverableError(
-                    '{} not provided as a property. '
-                    'and the provider context '
-                    'is not set up either'.format(constants.GCP_CONFIG))
+            with open(expanduser(constants.GCP_DEFAULT_CONFIG_PATH)) as f:
+                gcp_config = yaml.load(f)
+        except OSError:
+            raise NonRecoverableError(
+                '{} not provided as a property and the config file ({}) '
+                'does not exist either'.format(
+                    constants.GCP_CONFIG,
+                    constants.GCP_DEFAULT_CONFIG_PATH,
+                    ))
         gcp_config = deepcopy(config)
 
     return update_zone(gcp_config)
@@ -260,18 +261,6 @@ def update_zone(gcp_config):
         gcp_config['zone'] = non_default_zone
 
     return gcp_config
-
-
-def get_manager_provider_config():
-    provider_config = ctx.provider_context.get('resources', {})
-    agents_security_group = provider_config.get('agents_security_group', {})
-    manager_agent_security_group = \
-        provider_config.get('manager_agent_security_group', {})
-    provider_context = {
-        'agents_security_group': agents_security_group,
-        'manager_security_group': manager_agent_security_group
-    }
-    return provider_context
 
 
 def is_object_deleted(obj):
@@ -301,12 +290,18 @@ def get_key_user_string(user, public_key):
 
 
 def get_agent_ssh_key_string():
-    try:
-        return ctx.provider_context['resources'][
-                'cloudify_agent']['public_key']
-    except KeyError:
-        # means that we are bootstrapping the manager
-        return ''
+    cloudify_agent = ctx.provider_context['resources']['cloudify_agent']
+    key_path = cloudify_agent['agent_key_path']
+
+    public_key = check_output([
+        'ssh-keygen', '-y',  # generate public key from private key
+        '-P', '',  # don't prompt for passphrase (would hang forever)
+        '-f', expanduser(key_path)])
+    # add the agent user to the key. GCP uses this to create user accounts on
+    # the instance.
+    public_key += ' {}@cloudify'.format(cloudify_agent['user'])
+
+    return public_key
 
 
 def response_to_operation(response, config, logger):
