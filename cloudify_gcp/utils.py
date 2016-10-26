@@ -234,7 +234,7 @@ def get_gcp_config():
         try:
             with open(expanduser(constants.GCP_DEFAULT_CONFIG_PATH)) as f:
                 gcp_config = yaml.load(f)
-        except OSError as e:
+        except (IOError, OSError) as e:
             raise NonRecoverableError(
                 '{} not provided as a property and the config file ({}) '
                 'does not exist either: {}'.format(
