@@ -243,6 +243,9 @@ def get_gcp_config():
                     e,
                     ))
 
+    # If no network is specified, assume the GCP default network, 'default'
+    gcp_config.setdefault('network', 'default')
+
     return update_zone(gcp_config)
 
 
