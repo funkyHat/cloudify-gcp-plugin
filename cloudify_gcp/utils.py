@@ -16,7 +16,7 @@
 import re
 import string
 import time
-from copy import deepcopy
+from copy import copy
 from functools import wraps
 from subprocess import check_output
 from os.path import basename, expanduser
@@ -299,13 +299,17 @@ def get_key_user_string(user, public_key):
 
 
 def get_agent_ssh_key_string():
-    cloudify_agent = ctx.provider_context['resources']['cloudify_agent']
-    key_path = cloudify_agent['agent_key_path']
+    cloudify_agent = copy(ctx.provider_context['resources']['cloudify_agent'])
+
+    # node-specific overrides should take precendence
+    # cloudify_agent is deprecated but may still be used.
+    for key in 'cloudify_agent', 'agent_config':
+        cloudify_agent.update(ctx.node.properties.get(key, {}))
 
     public_key = check_output([
         'ssh-keygen', '-y',  # generate public key from private key
         '-P', '',  # don't prompt for passphrase (would hang forever)
-        '-f', expanduser(key_path)])
+        '-f', expanduser(cloudify_agent['key'])])
     # add the agent user to the key. GCP uses this to create user accounts on
     # the instance.
     public_key += ' {}@cloudify'.format(cloudify_agent['user'])

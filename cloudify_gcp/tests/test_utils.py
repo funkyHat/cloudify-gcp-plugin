@@ -161,11 +161,27 @@ class TestUtilsWithCTX(unittest.TestCase):
         with self.assertRaises(utils.HttpError):
             raise_http(404)
 
-    def test_get_agent_ssh_key_string(self, *args):
+    @patch('cloudify_gcp.utils.check_output')
+    def test_get_agent_ssh_key_string(self, mock_check_output, *args):
+        mock_check_output.return_value = 'public 🗝'
         self.ctxmock.provider_context = {
             'resources': {
                 'cloudify_agent': {
-                    'public_key': '🗝',
+                    'key': '🗝',
+                    'user': '🙎',
                     }}}
 
-        self.assertEqual('🗝', utils.get_agent_ssh_key_string())
+        self.assertEqual(
+                'public 🗝 🙎@cloudify',
+                utils.get_agent_ssh_key_string())
+
+    def test_get_gcp_config(self, *args):
+        self.ctxmock.node.properties['gcp_config'] = {
+                'zone': '3',
+                'project': 'plan 9',
+                'auth': 'let me in!',
+                }
+
+        conf = utils.get_gcp_config()
+
+        self.assertEqual('default', conf['network'])

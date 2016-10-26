@@ -576,11 +576,17 @@ def set_ip(instance, relationship=False):
                 'The instance has not yet created network interface', 10)
 
 
+def has_agent():
+    """Return true if an agent will be installed on this Instance"""
+    if not (utils.is_manager_instance() or
+            ctx.node.properties['install_agent']):
+        return True
+
+
 def get_ssh_keys():
     instance_keys = ctx.instance.runtime_properties.get(constants.SSH_KEYS, [])
-    if not utils.is_manager_instance():
-        agent_key = \
-            ctx.provider_context['resources']['cloudify_agent']['public_key']
+    if not has_agent():
+        agent_key = utils.get_agent_ssh_key_string()
         instance_keys.append(agent_key)
     return list(set(instance_keys))
 
