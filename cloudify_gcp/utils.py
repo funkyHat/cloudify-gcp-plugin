@@ -232,17 +232,16 @@ def get_gcp_config():
         gcp_config = gcp_config_from_properties
     else:
         try:
-            config = ctx.provider_context['resources'][constants.GCP_CONFIG]
             with open(expanduser(constants.GCP_DEFAULT_CONFIG_PATH)) as f:
                 gcp_config = yaml.load(f)
-        except OSError:
+        except OSError as e:
             raise NonRecoverableError(
                 '{} not provided as a property and the config file ({}) '
-                'does not exist either'.format(
+                'does not exist either: {}'.format(
                     constants.GCP_CONFIG,
                     constants.GCP_DEFAULT_CONFIG_PATH,
+                    e,
                     ))
-        gcp_config = deepcopy(config)
 
     return update_zone(gcp_config)
 
