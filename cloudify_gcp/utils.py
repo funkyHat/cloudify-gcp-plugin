@@ -243,6 +243,13 @@ def get_gcp_config():
                     e,
                     ))
 
+    # Validate the config contains what it should
+    try:
+        for key in 'project', 'auth', 'zone':
+            gcp_config[key]
+    except Exception as e:
+        raise NonRecoverableError("invalid gcp_config provided: {}".format(e))
+
     # If no network is specified, assume the GCP default network, 'default'
     gcp_config.setdefault('network', 'default')
 
