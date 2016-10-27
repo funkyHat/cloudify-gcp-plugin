@@ -281,10 +281,6 @@ def is_object_deleted(obj):
     return False
 
 
-def is_manager_instance():
-    return not ctx.provider_context
-
-
 def get_key_user_string(user, public_key):
     cleaned_user = re.sub(r'\s+', ' ', user).strip()
     cleaned_public_key = re.sub(r'\s+', ' ', public_key).strip()
