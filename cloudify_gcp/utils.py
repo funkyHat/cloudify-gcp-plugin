@@ -297,7 +297,7 @@ def get_key_user_string(user, public_key):
 def get_agent_ssh_key_string():
     try:
         cloudify_agent = copy(
-                ctx.provider_context['resources']['cloudify_agent'])
+                ctx.provider_context['cloudify']['cloudify_agent'])
     except KeyError:
         return ''
 
@@ -306,10 +306,14 @@ def get_agent_ssh_key_string():
     for key in 'cloudify_agent', 'agent_config':
         cloudify_agent.update(ctx.node.properties.get(key, {}))
 
+    if 'agent_key_path' not in cloudify_agent:
+        ctx.logger.debug('agent to be installed but no key file found')
+        return ''
+
     public_key = check_output([
         'ssh-keygen', '-y',  # generate public key from private key
         '-P', '',  # don't prompt for passphrase (would hang forever)
-        '-f', expanduser(cloudify_agent['key'])])
+        '-f', expanduser(cloudify_agent['agent_key_path'])])
     # add the agent user to the key. GCP uses this to create user accounts on
     # the instance.
     public_key += ' {}@cloudify'.format(cloudify_agent['user'])
