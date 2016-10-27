@@ -578,14 +578,14 @@ def set_ip(instance, relationship=False):
 
 def has_agent():
     """Return true if an agent will be installed on this Instance"""
-    if not (utils.is_manager_instance() or
-            ctx.node.properties['install_agent']):
+    if (ctx.node.properties['install_agent'] and
+            not utils.is_manager_instance()):
         return True
 
 
 def get_ssh_keys():
     instance_keys = ctx.instance.runtime_properties.get(constants.SSH_KEYS, [])
-    if not has_agent():
+    if has_agent():
         agent_key = utils.get_agent_ssh_key_string()
         instance_keys.append(agent_key)
     return list(set(instance_keys))
