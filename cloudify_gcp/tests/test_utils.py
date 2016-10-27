@@ -165,14 +165,14 @@ class TestUtilsWithCTX(unittest.TestCase):
     def test_get_agent_ssh_key_string(self, mock_check_output, *args):
         mock_check_output.return_value = 'public 🗝'
         self.ctxmock.provider_context = {
-            'resources': {
+            'cloudify': {
                 'cloudify_agent': {
-                    'key': '🗝',
+                    'agent_key_path': '🗝',
                     'user': '🙎',
                     }}}
 
         self.assertEqual(
-                'public 🗝 🙎@cloudify',
+                '🙎:public 🗝 🙎@cloudify',
                 utils.get_agent_ssh_key_string())
 
     def test_get_gcp_config(self, *args):

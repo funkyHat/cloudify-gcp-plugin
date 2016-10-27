@@ -579,9 +579,9 @@ def set_ip(instance, relationship=False):
 
 def get_ssh_keys():
     instance_keys = ctx.instance.runtime_properties.get(constants.SSH_KEYS, [])
-    install_agent = ctx.node.properties['install_agent']
+    install = ctx.node.properties['install_agent']
     # properties['install_agent'] defaults to '', but that means true!
-    if install_agent == '' or install_agent:
+    if install == '' or install:
         agent_key = utils.get_agent_ssh_key_string()
         instance_keys.append(agent_key)
     return list(set(instance_keys))
