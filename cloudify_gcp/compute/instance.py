@@ -278,6 +278,7 @@ class Instance(GoogleCloudPlatform):
 
     def to_dict(self):
         def add_key_value_to_metadata(key, value, body):
+            ctx.logger.info('Adding {} to metadata'.format(key))
             body['metadata']['items'].append({'key': key, 'value': value})
 
         network = {'network': 'global/networks/default'}
@@ -578,7 +579,9 @@ def set_ip(instance, relationship=False):
 
 def get_ssh_keys():
     instance_keys = ctx.instance.runtime_properties.get(constants.SSH_KEYS, [])
-    if ctx.node.properties['install_agent']:
+    install_agent = ctx.node.properties['install_agent']
+    # properties['install_agent'] defaults to '', but that means true!
+    if install_agent == '' or install_agent:
         agent_key = utils.get_agent_ssh_key_string()
         instance_keys.append(agent_key)
     return list(set(instance_keys))
