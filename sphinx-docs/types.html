@@ -1,0 +1,1168 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+  
+  <title>Types &mdash; cloudify-gcp-plugin 1.0a1 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+  <link href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.0.3/css/font-awesome.min.css' rel='stylesheet' type='text/css'>
+
+  
+  
+
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:'./',
+        VERSION:'1.0a1',
+        COLLAPSE_INDEX:false,
+        FILE_SUFFIX:'.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+    <link rel="stylesheet" href="_static/banner.css" type="text/css" />
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="cloudify-gcp-plugin 1.0a1 documentation" href="index.html"/>
+        <link rel="next" title="Using the GCP Plugin with a Manager" href="manager.html"/>
+        <link rel="prev" title="cloudify-gcp-plugin documentation" href="index.html"/> 
+
+  <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+  <style>
+    .search-reset-start {
+        color: #463E3F;
+        float: right;
+        position: relative;
+        top: -25px;
+        left: -10px;
+        z-index: 10;
+     }
+     .search-reset-start:hover {
+        cursor: pointer;
+        color: #2980B9;
+     }
+     #search-box-id {
+        padding-right: 25px;
+     }
+  </style>
+
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300'
+    rel='stylesheet' type='text/css'>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+  <!-- Google Tag Manager -->
+  <noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-PSB293" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f); })(window,document,'script','dataLayer','GTM-PSB293');</script>
+  <!-- End Google Tag Manager -->
+
+    <div class="DocSite-globalNav topNav">
+        <ul>
+            <li><a href="http://getcloudify.org/cloudifysourcetv.html" target="_blank">TUTORIALS</a></li>
+            <li><a href="http://getcloudify.org/participate.htm" target="_blank">TRAINING</a></li>
+            <li><a href="https://groups.google.com/forum/#!forum/cloudify-users" target="_blank">MAILING LIST</a></li>
+            <li><a href="http://getcloudify.org/blog/" target="_blank">BLOG</a></li>
+        </ul>
+    </div>
+
+  <a class="DocSite-nav" href="http://docs.getcloudify.org/">
+    <img class="DocSiteNav-logo"
+      src="_static/images/logo.png"
+      alt="Cloudify Logo">
+    <div class="DocSiteNav-title">
+      Cloudify Documentation
+    </div>
+  </a>
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+
+      <div style="background-color:#41b9d2;height=80px;margin:'auto auto auto auto'">
+        <a class="DocSiteProduct-header DocSiteProduct-header--core"
+           href="index.html">
+          <div class="DocSiteProduct-productName">
+            <div class="DocSiteProduct-logoText">
+                cloudify-gcp-plugin
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div id="menu-id" class="wy-menu wy-menu-vertical" data-spy="affix">
+        
+        
+            <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#common-properties">Common Properties</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#node-types">Node Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id4">Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#relationships">Relationships</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="manager.html">Using the GCP Plugin with a Manager</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="manager.html#bootstrapping">Bootstrapping</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manager.html#manager-gcp-config">Manager GCP Config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manager.html#networks">Networks</a></li>
+</ul>
+</li>
+</ul>
+
+        
+
+
+    <div class="DocSite-sideNav topNav">
+       <ul class="">
+       <li><a href="http://getcloudify.org/cloudifysourcetv.html" target="_blank">TUTORIALS</a></li>
+       <li><a href="http://getcloudify.org/participate.htm" target="_blank">TRAINING</a></li>
+       <li><a href="https://groups.google.com/forum/#!forum/cloudify-users" target="_blank">MAILING LIST</a></li>
+       <li><a href="http://getcloudify.org/blog/" target="_blank">BLOG</a></li>
+       </ul>
+     </div>
+
+    
+    <div id="plugin-links">
+        <h3>Official Plugins</h3>
+        <ul>
+        
+            <li class="toctree-l1">
+                <a class="reference internal" href="https://funkyhat.github.io/cloudify-script-plugin/">
+                script</a>
+            </li>
+        
+            <li class="toctree-l1">
+                <a class="reference internal" href="https://funkyhat.github.io/cloudify-aws-plugin/">
+                aws</a>
+            </li>
+        
+            <li class="toctree-l1">
+                <a class="reference internal" href="https://funkyhat.github.io/cloudify-fabric-plugin/">
+                fabric</a>
+            </li>
+        
+            <li class="toctree-l1">
+                <a class="reference internal" href="https://funkyhat.github.io/cloudify-vsphere-plugin/">
+                vsphere</a>
+            </li>
+        
+            <li class="toctree-l1">
+                <a class="reference internal" href="https://funkyhat.github.io/cloudify-openstack-plugin/">
+                openstack</a>
+            </li>
+        
+            <li class="toctree-l1">
+                <a class="reference internal" href="https://funkyhat.github.io/cloudify-docker-plugin/">
+                docker</a>
+            </li>
+        
+            <li class="toctree-l1">
+                <a class="reference internal" href="https://funkyhat.github.io/cloudify-diamond-plugin/">
+                diamond</a>
+            </li>
+        
+            <li class="toctree-l1">
+                <a class="reference internal" href="https://funkyhat.github.io/cloudify-host-pool-plugin/">
+                host-pool</a>
+            </li>
+        
+            <li class="toctree-l1">
+                <a class="reference internal" href="https://funkyhat.github.io/cloudify-psutil-plugin/">
+                psutil</a>
+            </li>
+        
+            <li class="toctree-l1">
+                <a class="reference internal" href="https://funkyhat.github.io/tosca-vcloud-plugin/">
+                vcloud</a>
+            </li>
+        
+            <li class="toctree-l1">
+                <a class="reference internal" href="https://funkyhat.github.io/cloudify-ldap-plugin/">
+                ldap</a>
+            </li>
+        
+        </ul>
+    </div>
+    
+
+
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top">
+        <i data-toggle="wy-nav-top" class="icon icon-reorder"></i>
+        <a href="/">cloudify-gcp-plugin</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+
+          <ul class="wy-breadcrumbs">
+  <li><a href="index.html">Docs</a> &raquo;</li>
+  <li><a href="">Types</a></li>
+  
+</ul>
+<hr/>
+
+          <div id="page-content">
+          
+  <div class="section" id="types">
+<h1>Types<a class="headerlink" href="#types" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="common-properties">
+<span id="id1"></span><h2>Common Properties<a class="headerlink" href="#common-properties" title="Permalink to this headline">¶</a></h2>
+<p>Many cloud resource nodes have common properties:</p>
+<div class="section" id="gcp-config">
+<h3><code class="docutils literal"><span class="pre">gcp_config</span></code><a class="headerlink" href="#gcp-config" title="Permalink to this headline">¶</a></h3>
+<p>Every time you manage a resource with Cloudify,
+it creates one or more connections to the GCP API.
+The configuration for these clients is specified using the <code class="docutils literal"><span class="pre">gcp_config</span></code> property.
+It should be a dictionary with the following values:</p>
+<blockquote>
+<div><ul class="simple">
+<li><code class="docutils literal"><span class="pre">project</span></code> the name of your project on GCP.</li>
+<li><code class="docutils literal"><span class="pre">zone</span></code> the default zone which will be used,
+unless overridden by a defined zone/subnetwork.</li>
+<li><code class="docutils literal"><span class="pre">auth</span></code> the JSON key file provided by GCP.
+Can either be the contents of the JSON file, or a file path.
+This should be in the format provided by the GCP credentials JSON export (<a class="reference external" href="https://developers.google.com/identity/protocols/OAuth2ServiceAccount#creatinganaccount">https://developers.google.com/identity/protocols/OAuth2ServiceAccount#creatinganaccount</a>)</li>
+<li>(optional) <code class="docutils literal"><span class="pre">network</span></code> the default network to place network-scoped nodes in.
+The default network (<code class="docutils literal"><span class="pre">default</span></code>) will be used if this is not specified.</li>
+</ul>
+</div></blockquote>
+<p>Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="n">node_types</span><span class="p">:</span>
+  <span class="n">my_vm</span><span class="p">:</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="n">cloudify</span><span class="o">.</span><span class="n">gcp</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">Instance</span>
+    <span class="n">properties</span><span class="p">:</span>
+      <span class="n">image_id</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">GCP</span> <span class="n">image</span> <span class="n">ID</span><span class="o">&gt;</span>
+      <span class="n">gcp_config</span><span class="p">:</span>
+        <span class="n">project</span><span class="p">:</span> <span class="n">a</span><span class="o">-</span><span class="n">gcp</span><span class="o">-</span><span class="n">project</span><span class="o">-</span><span class="mi">123456</span>
+        <span class="n">zone</span><span class="p">:</span> <span class="n">us</span><span class="o">-</span><span class="n">east1</span><span class="o">-</span><span class="n">b</span>
+        <span class="n">auth</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">GCP</span> <span class="n">auth</span> <span class="n">JSON</span> <span class="n">file</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="use-external-resource">
+<h3><code class="docutils literal"><span class="pre">use_external_resource</span></code><a class="headerlink" href="#use-external-resource" title="Permalink to this headline">¶</a></h3>
+<p>Many Cloudify GCP types have a property named <code class="docutils literal"><span class="pre">use_external_resource</span></code>, which defaults to <code class="docutils literal"><span class="pre">false</span></code>. When set to <code class="docutils literal"><span class="pre">true</span></code>, the plugin will apply different semantics for each of the operations executed on the relevant node&#8217;s instances:</p>
+<blockquote>
+<div>If <code class="docutils literal"><span class="pre">use_external_resource</span></code> is <code class="docutils literal"><span class="pre">true</span></code>, then the required properties for that type (<cite>name</cite>, possibly <code class="docutils literal"><span class="pre">region</span></code> or <code class="docutils literal"><span class="pre">zone</span></code>) will be used to look up an existing entity in the GCP project.
+If the entity is found, then its data will be used to popluate the cloudify instance&#8217;s attributes (<code class="docutils literal"><span class="pre">runtime_properties</span></code>). If it is not found then the blueprint will fail to deploy.</div></blockquote>
+<p>This behavior is common to all resource types which support <code class="docutils literal"><span class="pre">use_external_resource</span></code>:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">create</span></code> If <code class="docutils literal"><span class="pre">use_external_resource</span></code> is true, the GCP plugin will check if the resource is available in your account. If no such resource is available, the operation will fail, if it is available, it will assign the resource details to the instance <code class="docutils literal"><span class="pre">runtime_properties</span></code>.</li>
+<li><code class="docutils literal"><span class="pre">delete</span></code> If <code class="docutils literal"><span class="pre">use_external_resource</span></code> is true, the GCP plugin will check if the resource is available in your account. If no such resource is available, the operation will fail, if it is available, it will unassign the instance <code class="docutils literal"><span class="pre">runtime_properties</span></code>.</li>
+</ul>
+</div>
+<div class="section" id="runtime-properties">
+<h3>Runtime Properties<a class="headerlink" href="#runtime-properties" title="Permalink to this headline">¶</a></h3>
+<p>See section on <a class="reference external" href="http://cloudify-plugins-common.readthedocs.org/en/3.3/context.html?highlight=runtime#cloudify.context.NodeInstanceContext.runtime_properties">runtime properties</a>.</p>
+<p>Most node types will write a snapshot of the <a class="reference external" href="https://cloud.google.com/docs/overview/"><code class="docutils literal"><span class="pre">resource</span></code></a>
+information from GCP when the node creation has finished
+(some, e.g. DNSRecord don&#8217;t correspond directly to an entity in GCP,
+so this is not universal).</p>
+</div>
+</div>
+<div class="section" id="node-types">
+<span id="id3"></span><h2>Node Types<a class="headerlink" href="#node-types" title="Permalink to this headline">¶</a></h2>
+<p>The following are
+<a class="reference external" href="http://docs.getcloudify.org/latest/blueprints/spec-node-types.md">node type</a>
+definitions.
+Nodes describe resources in your cloud infrastructure.</p>
+</div>
+<div class="section" id="id4">
+<h2>Types<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="compute">
+<h3>Compute<a class="headerlink" href="#compute" title="Permalink to this headline">¶</a></h3>
+<dl class="node">
+<dt id="cloudify.gcp.nodes.Instance">
+<code class="descname">cloudify.gcp.nodes.Instance</code><a class="headerlink" href="#cloudify.gcp.nodes.Instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>A GCP Instance (i.e. a VM). <a class="reference external" href="https://funkyhat.github.io/demo-docs-root/types.html#cloudify.nodes.Compute" title="(in Cloudify v4)"><code class="xref cfy cfy-node docutils literal"><span class="pre">cloudify.nodes.Compute</span></code></a>.</p>
+<p>Derived from: <a class="reference external" href="https://funkyhat.github.io/demo-docs-root/types.html#cloudify.nodes.Compute" title="(in Cloudify v4)">cloudify.nodes.Compute</a></p>
+<p class="rubric">Properties:</p>
+<dl class="docutils">
+<dt>scopes</dt>
+<dd><p class="first"><strong>default:</strong> []</p>
+<p class="last">Optional scopes. If not will set by default:  &#8216;<a class="reference external" href="https://www.googleapis.com/auth/devstorage.read_write">https://www.googleapis.com/auth/devstorage.read_write</a>&#8216;, &#8216;<a class="reference external" href="https://www.googleapis.com/auth/logging.write">https://www.googleapis.com/auth/logging.write</a>&#8216;</p>
+</dd>
+<dt>name</dt>
+<dd>Optional instance name. By default it will be instance id.</dd>
+<dt>zone</dt>
+<dd>Optional zone name. If not given, this instance will be deployed in default zone.</dd>
+<dt>tags</dt>
+<dd>Optional tags. If not given, this instance will have a tag only with its name.</dd>
+<dt>external_ip</dt>
+<dd><p class="first"><strong>default:</strong> False</p>
+<p class="last">Should the Instance be created with an externally-accessible IP address. This will be an ephemeral IP. If you would like to use an IP address which can be transferred to another Instance then connect this Instance to an <cite>Address</cite> node using the <cite>cloudify.gcp.relationships.instance_connected_to_ip</cite> relationship.</p>
+</dd>
+<dt>gcp_config</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">A dictionary of values to pass to authenticate with the GCP API.</p>
+</dd>
+<dt>image_id</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">The ID of the image in your GCP account.</p>
+</dd>
+<dt>block_project_ssh_keys</dt>
+<dd><p class="first"><strong>default:</strong> False</p>
+<p class="last">Disable project-wide ssh keys for this Instance</p>
+</dd>
+<dt>instance_type</dt>
+<dd><p class="first"><strong>default:</strong> n1-standard-1</p>
+<p class="last">The instance&#8217;s type. All available instance types can be found here:  <a class="reference external" href="https://cloud.google.com/compute/docs/machine-types">https://cloud.google.com/compute/docs/machine-types</a></p>
+</dd>
+<dt>additional_settings</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">Additional instance settings.</p>
+</dd>
+<dt>startup_script</dt>
+<dd><p class="first">A script which will be run when the Instance is first started
+Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nb">type</span><span class="p">:</span> <span class="n">string</span>
+<span class="n">script</span><span class="p">:</span> <span class="o">|</span>
+  <span class="n">yum</span> <span class="n">install</span> <span class="n">some</span> <span class="n">stuff</span>
+  <span class="n">systemctl</span> <span class="n">start</span> <span class="n">it</span>
+</pre></div>
+</div>
+<p>or:</p>
+<div class="last highlight-default"><div class="highlight"><pre><span></span><span class="nb">type</span><span class="p">:</span> <span class="n">file</span>
+<span class="n">script</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">path</span> <span class="n">to</span> <span class="n">script</span> <span class="n">file</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+</dd>
+<dt>can_ip_forward</dt>
+<dd><p class="first"><strong>default:</strong> False</p>
+<p class="last">Is the VM allowed to send packets with source address different to its own?</p>
+</dd>
+<dt>use_external_resource</dt>
+<dd><p class="first"><strong>default:</strong> False</p>
+<p class="last">Indicate whether the resource exists and use existing (true)  or if Cloudify should create new resource (false).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="node">
+<dt id="cloudify.gcp.nodes.Address">
+<code class="descname">cloudify.gcp.nodes.Address</code><a class="headerlink" href="#cloudify.gcp.nodes.Address" title="Permalink to this definition">¶</a></dt>
+<dd><p>A GCP Address. This can be connected to an Instance using the
+<code class="docutils literal"><span class="pre">cloudify.gcp.relationships.instance_connected_to_ip</span></code> relationship type</p>
+<p>Derived from: <a class="reference internal" href="#cloudify.gcp.nodes.GlobalAddress" title="cloudify.gcp.nodes.GlobalAddress">cloudify.gcp.nodes.GlobalAddress</a></p>
+<p class="rubric">Properties:</p>
+<dl class="docutils">
+<dt>gcp_config</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">A dictionary of values to pass to authenticate with the GCP API.</p>
+</dd>
+<dt>region</dt>
+<dd>Region to place the Address in. If not provided it defaults to the value in <cite>gcp_config</cite> (which defaults to &#8216;default&#8217;).</dd>
+</dl>
+</dd></dl>
+
+<dl class="node">
+<dt id="cloudify.gcp.nodes.ExternalIP">
+<code class="descname">cloudify.gcp.nodes.ExternalIP</code><a class="headerlink" href="#cloudify.gcp.nodes.ExternalIP" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Deprecated</em> use the <code class="docutils literal"><span class="pre">external_ip</span></code> property on the <code class="docutils literal"><span class="pre">Instance</span></code>
+or an <code class="docutils literal"><span class="pre">Address</span></code> node instead.</p>
+<p>When used with the <code class="docutils literal"><span class="pre">cloudify.gcp.relationships.instance_connected_to_ip</span></code> the connected Instance will be created with an ephemeral external IP.</p>
+<p>Derived from: <a class="reference external" href="https://funkyhat.github.io/demo-docs-root/types.html#cloudify.nodes.VirtualIP" title="(in Cloudify v4)">cloudify.nodes.VirtualIP</a></p>
+<p class="rubric">Properties:</p>
+<dl class="docutils">
+<dt>gcp_config</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">A dictionary of values to pass to authenticate with the GCP API.</p>
+</dd>
+<dt>ip_address</dt>
+<dd>Address of this external IP. This should be address of already existing, unattached static IP. It will be used only if &#8220;use_external_resource&#8221; is set to true.</dd>
+<dt>use_external_resource</dt>
+<dd><p class="first"><strong>default:</strong> False</p>
+<p class="last">Indicate whether the resource exists or if Cloudify should create the resource. If set to true, this node will be static IP, otherwise ephemeral IP.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="node">
+<dt id="cloudify.gcp.nodes.Volume">
+<code class="descname">cloudify.gcp.nodes.Volume</code><a class="headerlink" href="#cloudify.gcp.nodes.Volume" title="Permalink to this definition">¶</a></dt>
+<dd><p>A GCP Volume.</p>
+<p>A virtual disk which can be attached to Instances.</p>
+<p>Derived from: <a class="reference external" href="https://funkyhat.github.io/demo-docs-root/types.html#cloudify.nodes.Volume" title="(in Cloudify v4)">cloudify.nodes.Volume</a></p>
+<p class="rubric">Properties:</p>
+<dl class="docutils">
+<dt>name</dt>
+<dd>Optional disk name. By default it will be disk id.</dd>
+<dt>gcp_config</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">A dictionary of values to pass to authenticate with the Google Cloud Platform API.</p>
+</dd>
+<dt>image</dt>
+<dd>The image of the Volume.</dd>
+<dt>boot</dt>
+<dd><p class="first"><strong>default:</strong> False</p>
+<p class="last">Will this disk be the boot disk for the Instance it is connected to?</p>
+</dd>
+<dt>additional_settings</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">Additional setting for volume</p>
+</dd>
+<dt>use_external_resource</dt>
+<dd><p class="first"><strong>default:</strong> False</p>
+<p class="last">Indicate whether the resource exists or if Cloudify should create the resource.</p>
+</dd>
+<dt>size</dt>
+<dd><p class="first"><strong>default:</strong> 10</p>
+<p class="last">Size of the Volume in GB.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="node">
+<dt id="cloudify.gcp.nodes.Image">
+<code class="descname">cloudify.gcp.nodes.Image</code><a class="headerlink" href="#cloudify.gcp.nodes.Image" title="Permalink to this definition">¶</a></dt>
+<dd><p>A stored image which can be used as the base for newly created Instances.</p>
+<p>Derived from: <a class="reference external" href="https://funkyhat.github.io/demo-docs-root/types.html#cloudify.nodes.Root" title="(in Cloudify v4)">cloudify.nodes.Root</a></p>
+<p class="rubric">Properties:</p>
+<dl class="docutils">
+<dt>gcp_config</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">A dictionary of values to pass to authenticate with the GCP API.</p>
+</dd>
+<dt>additional_settings</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">Additional setting for image</p>
+</dd>
+<dt>use_external_resource</dt>
+<dd><p class="first"><strong>default:</strong> False</p>
+<p class="last">Indicate whether the resource exists or if Cloudify should create the resource.</p>
+</dd>
+<dt>image_name</dt>
+<dd>Name to use for the image. Defaults to the instance ID.</dd>
+<dt>image_path</dt>
+<dd>The (local system) path to the image file which will be uploaded.</dd>
+</dl>
+</dd></dl>
+
+<dl class="node">
+<dt id="cloudify.gcp.nodes.KeyPair">
+<code class="descname">cloudify.gcp.nodes.KeyPair</code><a class="headerlink" href="#cloudify.gcp.nodes.KeyPair" title="Permalink to this definition">¶</a></dt>
+<dd><p>An SSH key-pair which will be uploaded to any Instances connected to it via
+<code class="docutils literal"><span class="pre">cloudify.gcp.relationships.instance_connected_to_keypair</span></code>.</p>
+<p>Unlike other cloud providers,
+users are dynamically created on Instances based on the username specified by the uploaded SSH key,
+so the public key text must include a username in the comment section
+(keys generated using <code class="docutils literal"><span class="pre">ssh-keygen</span></code> have this by default).</p>
+<p>Derived from: <a class="reference external" href="https://funkyhat.github.io/demo-docs-root/types.html#cloudify.nodes.Root" title="(in Cloudify v4)">cloudify.nodes.Root</a></p>
+<p class="rubric">Properties:</p>
+<dl class="docutils">
+<dt>private_key_path</dt>
+<dd>The path where the key should be saved on the machine. If this is a bootstrap process, this refers to the local computer. If this will run on the manager, this will be saved on the manager.</dd>
+<dt>use_external_resource</dt>
+<dd><p class="first"><strong>default:</strong> False</p>
+<p class="last">Indicate whether the resource exists or if Cloudify should create the resource.</p>
+</dd>
+<dt>public_key_path</dt>
+<dd>The path to read from existing public key.</dd>
+<dt>user</dt>
+<dd>The user account for this key. A corresponding user account will be created by GCP when the key is added to the Instance. This must be supplied for a non-external resource key. See <a class="reference external" href="https://cloud.google.com/compute/docs/instances/adding-removing-ssh-keys">https://cloud.google.com/compute/docs/instances/adding-removing-ssh-keys</a></dd>
+<dt>gcp_config</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">A dictionary of values to pass to authenticate with the Google Cloud Platform API.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="node">
+<dt id="cloudify.gcp.nodes.InstanceGroup">
+<code class="descname">cloudify.gcp.nodes.InstanceGroup</code><a class="headerlink" href="#cloudify.gcp.nodes.InstanceGroup" title="Permalink to this definition">¶</a></dt>
+<dd><p>A GCP InstanceGroup.
+This is used to configure failover systems.
+InstanceGroups can be configured to scale automatically based on load,
+and will replace failing Instances with freashly started ones.</p>
+<p>Derived from: <a class="reference external" href="https://funkyhat.github.io/demo-docs-root/types.html#cloudify.nodes.Root" title="(in Cloudify v4)">cloudify.nodes.Root</a></p>
+<p class="rubric">Properties:</p>
+<dl class="docutils">
+<dt>gcp_config</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">A dictionary of values to pass to authenticate with the GCP API.</p>
+</dd>
+<dt>additional_settings</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">Additional setting for instance group</p>
+</dd>
+<dt>use_external_resource</dt>
+<dd><p class="first"><strong>default:</strong> False</p>
+<p class="last">Indicate whether the resource exists and use existing (true) or if Cloudify should create new resource (false).</p>
+</dd>
+<dt>named_ports</dt>
+<dd><p class="first"><strong>default:</strong> []</p>
+<p>A list of named ports defined for this instance group, the expected format is:</p>
+<div class="last highlight-default"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="s1">&#39;name&#39;</span>
+  <span class="n">port</span><span class="p">:</span> <span class="mi">1234</span>
+<span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="s1">&#39;enam&#39;</span>
+  <span class="n">port</span><span class="p">:</span> <span class="mi">4321</span>
+<span class="o">-</span> <span class="o">...</span>
+</pre></div>
+</div>
+</dd>
+<dt>name</dt>
+<dd>Optional instance name. By default it will be instance group id.</dd>
+</dl>
+</dd></dl>
+
+<dl class="node">
+<dt id="cloudify.gcp.nodes.FirewallRule">
+<code class="descname">cloudify.gcp.nodes.FirewallRule</code><a class="headerlink" href="#cloudify.gcp.nodes.FirewallRule" title="Permalink to this definition">¶</a></dt>
+<dd><p>A GCP FirewallRule.
+This describes allowed traffic directed to either the whole of the specified network, or to Instances specified by matching tags.</p>
+<p>Derived from: <a class="reference external" href="https://funkyhat.github.io/demo-docs-root/types.html#cloudify.nodes.Root" title="(in Cloudify v4)">cloudify.nodes.Root</a></p>
+<p class="rubric">Properties:</p>
+<dl class="docutils">
+<dt>name</dt>
+<dd>Optional security group name. By default it will be network name plus node name.</dd>
+<dt>gcp_config</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">A dictionary of values to pass to authenticate with the Google Cloud Platform API.</p>
+</dd>
+<dt>target_tags</dt>
+<dd><p class="first"><strong>default:</strong> []</p>
+<p class="last">List of target tags this rule should apply to. If no tags are specified, it will apply to all instances in the network</p>
+</dd>
+<dt>sources</dt>
+<dd><p class="first"><strong>required</strong></p>
+<p>List of CIDR formatted ranges and instance tags which
+will be permitted to connect to targets by this rule
+e.g.:</p>
+<div class="last highlight-default"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="mf">10.100</span><span class="o">.</span><span class="mf">101.0</span><span class="o">/</span><span class="mi">24</span>
+<span class="o">-</span> <span class="n">a</span><span class="o">-</span><span class="n">tag</span>
+</pre></div>
+</div>
+</dd>
+<dt>additional_settings</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">Additional setting for firewall</p>
+</dd>
+<dt>allowed</dt>
+<dd><p class="first"><strong>required</strong></p>
+<p>Dictionary of allowed ports per protocol, in the form protocol: [port, ...] If no ports are specified then all ports are opened for that protocol eg:</p>
+<div class="last highlight-default"><div class="highlight"><pre><span></span><span class="n">tcp</span><span class="p">:</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">443</span>
+<span class="n">udp</span><span class="p">:</span>
+</pre></div>
+</div>
+</dd>
+<dt>use_external_resource</dt>
+<dd><p class="first"><strong>default:</strong> False</p>
+<p class="last">Indicate whether the resource exists or if Cloudify should create the resource.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="node">
+<dt id="cloudify.gcp.nodes.SecurityGroup">
+<code class="descname">cloudify.gcp.nodes.SecurityGroup</code><a class="headerlink" href="#cloudify.gcp.nodes.SecurityGroup" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Deprecated</em> please use a <code class="docutils literal"><span class="pre">FirewallRule</span></code> instead.</p>
+<p>A virtual SecurityGroup.
+Google Cloud Platform has no entity equivalent to a Security Group on AWS or OpenStack,
+so as a convenience Cloudify includes a virtual one.
+It is implemented behind the scenes using a specially constructed tag and a number of FirewallRules.</p>
+<p>Derived from: <a class="reference external" href="https://funkyhat.github.io/demo-docs-root/types.html#cloudify.nodes.SecurityGroup" title="(in Cloudify v4)">cloudify.nodes.SecurityGroup</a></p>
+<p class="rubric">Properties:</p>
+<dl class="docutils">
+<dt>rules</dt>
+<dd><p class="first"><strong>default:</strong> []</p>
+<p class="last">List of FirewallRules which will form this SecurityGroup. Only the <cite>sources:</cite> and <cite>allowed:</cite> fields should be supplied (see FirewallRule properties for details).</p>
+</dd>
+<dt>gcp_config</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">A dictionary of values to pass to authenticate with the Google Cloud Platform API.</p>
+</dd>
+<dt>name</dt>
+<dd>Optional security group name. By default it will be network name plus node name.</dd>
+</dl>
+</dd></dl>
+
+<dl class="node">
+<dt id="cloudify.gcp.nodes.Route">
+<code class="descname">cloudify.gcp.nodes.Route</code><a class="headerlink" href="#cloudify.gcp.nodes.Route" title="Permalink to this definition">¶</a></dt>
+<dd><p>A defined route, which will be added to the specified network.
+If tags are specified, it will only be added to Instances matching them.</p>
+<p>Derived from: <a class="reference external" href="https://funkyhat.github.io/demo-docs-root/types.html#cloudify.nodes.Router" title="(in Cloudify v4)">cloudify.nodes.Router</a></p>
+<p class="rubric">Properties:</p>
+<dl class="docutils">
+<dt>dest_range</dt>
+<dd><p class="first"><strong>required</strong></p>
+<p class="last">The outgoing range that this route will handle</p>
+</dd>
+<dt>name</dt>
+<dd>Optional Route name. The instance ID will be used by default.</dd>
+<dt>tags</dt>
+<dd><p class="first"><strong>default:</strong> []</p>
+<p class="last">Instance tags that this route will be applied to</p>
+</dd>
+<dt>gcp_config</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">A dictionary of values to pass to authenticate with the Google Cloud Platform API.</p>
+</dd>
+<dt>priority</dt>
+<dd><p class="first"><strong>default:</strong> 1000</p>
+<p class="last">The routing table priority for this route. Routes with lower priority numbers will be chosen first if more than one route with a matching prefix of the same length.</p>
+</dd>
+<dt>additional_settings</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">Additional setting for firewall</p>
+</dd>
+<dt>next_hop</dt>
+<dd>The Instance, IP or VpnTunnel which will handle the matching packets</dd>
+</dl>
+</dd></dl>
+
+<dl class="node">
+<dt id="cloudify.gcp.nodes.Network">
+<code class="descname">cloudify.gcp.nodes.Network</code><a class="headerlink" href="#cloudify.gcp.nodes.Network" title="Permalink to this definition">¶</a></dt>
+<dd><p>A GCP Network.
+This supports either auto-assigned or manual subnets.
+Legacy networks are not supported.
+See the GCP Manager and Networks section below if you plan to run a cloudify manager on GCP.</p>
+<p>Derived from: <a class="reference external" href="https://funkyhat.github.io/demo-docs-root/types.html#cloudify.nodes.Network" title="(in Cloudify v4)">cloudify.nodes.Network</a></p>
+<p class="rubric">Properties:</p>
+<dl class="docutils">
+<dt>gcp_config</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">A dictionary of values to pass to authenticate with the Google Cloud Platform API.</p>
+</dd>
+<dt>auto_subnets</dt>
+<dd><p class="first"><strong>default:</strong> True</p>
+<p class="last">Whether to use the GCP &#8220;autoCreateSubnetworks&#8221; feature (see <a class="reference external" href="https://cloud.google.com/compute/docs/subnetworks#networks_and_subnetworks">https://cloud.google.com/compute/docs/subnetworks#networks_and_subnetworks</a>)</p>
+</dd>
+<dt>use_external_resource</dt>
+<dd><p class="first"><strong>default:</strong> False</p>
+<p class="last">Indicate whether the resource exists or if Cloudify should create the resource.</p>
+</dd>
+<dt>additional_settings</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">Additional setting for network</p>
+</dd>
+<dt>name</dt>
+<dd>Optional Network name. The instance ID will be used by default.</dd>
+</dl>
+</dd></dl>
+
+<dl class="node">
+<dt id="cloudify.gcp.nodes.SubNetwork">
+<code class="descname">cloudify.gcp.nodes.SubNetwork</code><a class="headerlink" href="#cloudify.gcp.nodes.SubNetwork" title="Permalink to this definition">¶</a></dt>
+<dd><p>A GCP Subnetwork.
+Must be connected to a Network using <code class="docutils literal"><span class="pre">cloudify.gcp.relationships.contained_in_network</span></code>.</p>
+<p>Only networks with the <code class="docutils literal"><span class="pre">auto_subnets</span></code> property disabled can be used.</p>
+<p>Derived from: <a class="reference external" href="https://funkyhat.github.io/demo-docs-root/types.html#cloudify.nodes.Subnet" title="(in Cloudify v4)">cloudify.nodes.Subnet</a></p>
+<p class="rubric">Properties:</p>
+<dl class="docutils">
+<dt>subnet</dt>
+<dd>The subnet, denoted in CIDR form (i.e. &#8216;10.8.0.0/20&#8217;) Subnets must be unique and non-overlapping within a project. See <a class="reference external" href="https://cloud.google.com/compute/docs/subnetworks#networks_and_subnetworks">https://cloud.google.com/compute/docs/subnetworks#networks_and_subnetworks</a></dd>
+<dt>region</dt>
+<dd>The region this subnet is in. See <a class="reference external" href="https://cloud.google.com/compute/docs/regions-zones/regions-zones">https://cloud.google.com/compute/docs/regions-zones/regions-zones</a></dd>
+<dt>gcp_config</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">A dictionary of values to pass to authenticate with the Google Cloud Platform API.</p>
+</dd>
+<dt>use_external_resource</dt>
+<dd><p class="first"><strong>default:</strong> False</p>
+<p class="last">Indicate whether the resource exists or if Cloudify should create the resource.</p>
+</dd>
+<dt>name</dt>
+<dd>Optional SubNetwork name. The instance ID will be used by default.</dd>
+</dl>
+</dd></dl>
+
+<dl class="node">
+<dt id="cloudify.gcp.nodes.GlobalAddress">
+<code class="descname">cloudify.gcp.nodes.GlobalAddress</code><a class="headerlink" href="#cloudify.gcp.nodes.GlobalAddress" title="Permalink to this definition">¶</a></dt>
+<dd><p>A GCP GlobalAddress.</p>
+<p>GlobalAddress can only be used together with GlobalForwardingRule. If you want to connect a static IP to an Instance, use StaticIP instead.</p>
+<p>Derived from: <a class="reference external" href="https://funkyhat.github.io/demo-docs-root/types.html#cloudify.nodes.VirtualIP" title="(in Cloudify v4)">cloudify.nodes.VirtualIP</a></p>
+<p class="rubric">Properties:</p>
+<dl class="docutils">
+<dt>gcp_config</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">A dictionary of values to pass to authenticate with the GCP API.</p>
+</dd>
+<dt>additional_settings</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">Additional setting for static ip</p>
+</dd>
+<dt>use_external_resource</dt>
+<dd><p class="first"><strong>default:</strong> False</p>
+<p class="last">Indicate whether the resource exists or if Cloudify should create the resource. If set to true, this node will be already existing static IP address, otherwise it will be reserved static IP address.</p>
+</dd>
+<dt>name</dt>
+<dd>Optional static ip name. By default it will be static ip id.</dd>
+</dl>
+</dd></dl>
+
+<dl class="node">
+<dt id="cloudify.gcp.nodes.StaticIP">
+<code class="descname">cloudify.gcp.nodes.StaticIP</code><a class="headerlink" href="#cloudify.gcp.nodes.StaticIP" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Deprecated</em> alias for <code class="docutils literal"><span class="pre">GlobalAddress</span></code></p>
+<p>Derived from: <a class="reference internal" href="#cloudify.gcp.nodes.GlobalAddress" title="cloudify.gcp.nodes.GlobalAddress">cloudify.gcp.nodes.GlobalAddress</a></p>
+</dd></dl>
+
+<dl class="node">
+<dt id="cloudify.gcp.nodes.BackendService">
+<code class="descname">cloudify.gcp.nodes.BackendService</code><a class="headerlink" href="#cloudify.gcp.nodes.BackendService" title="Permalink to this definition">¶</a></dt>
+<dd><p>A group of Instances (contained within InstanceGroups) which can be used
+as the backend for load balancing.</p>
+<p>Derived from: <a class="reference external" href="https://funkyhat.github.io/demo-docs-root/types.html#cloudify.nodes.Root" title="(in Cloudify v4)">cloudify.nodes.Root</a></p>
+<p class="rubric">Properties:</p>
+<dl class="docutils">
+<dt>gcp_config</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">A dictionary of values to pass to authenticate with the GCP API.</p>
+</dd>
+<dt>additional_settings</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">Optional additional settings. Possible fields in dictionary are: port_name, protocol, timeout_sec.</p>
+</dd>
+<dt>health_check</dt>
+<dd>URL of a health check assigned to this backend service.</dd>
+<dt>use_external_resource</dt>
+<dd><p class="first"><strong>default:</strong> False</p>
+<p class="last">Indicate whether the resource exists and use existing (true) or if Cloudify should create new resource (false).</p>
+</dd>
+<dt>name</dt>
+<dd>Optional health check name. By default it will be backend service id.</dd>
+</dl>
+</dd></dl>
+
+<dl class="node">
+<dt id="cloudify.gcp.nodes.UrlMap">
+<code class="descname">cloudify.gcp.nodes.UrlMap</code><a class="headerlink" href="#cloudify.gcp.nodes.UrlMap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Maps URLs to BackendServices</p>
+<p>Derived from: <a class="reference external" href="https://funkyhat.github.io/demo-docs-root/types.html#cloudify.nodes.Root" title="(in Cloudify v4)">cloudify.nodes.Root</a></p>
+<p class="rubric">Properties:</p>
+<dl class="docutils">
+<dt>default_service</dt>
+<dd>URL of a backend service to which this URL map will redirect traffic by default.</dd>
+<dt>gcp_config</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">A dictionary of values to pass to authenticate with the GCP API.</p>
+</dd>
+<dt>additional_settings</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">Additional setting for url map</p>
+</dd>
+<dt>use_external_resource</dt>
+<dd><p class="first"><strong>default:</strong> False</p>
+<p class="last">Indicate whether the resource exists and use existing (true) or if Cloudify should create new resource (false).</p>
+</dd>
+<dt>name</dt>
+<dd>Optional health check name. By default it will be URL map id.</dd>
+</dl>
+</dd></dl>
+
+<dl class="node">
+<dt id="cloudify.gcp.nodes.GlobalForwardingRule">
+<code class="descname">cloudify.gcp.nodes.GlobalForwardingRule</code><a class="headerlink" href="#cloudify.gcp.nodes.GlobalForwardingRule" title="Permalink to this definition">¶</a></dt>
+<dd><p>A GCP GlobalForwardingRule.</p>
+<p>Can only be used in conjunction with a GlobalAddress to set up HTTP and HTTPS forwarding.</p>
+<p>Derived from: <a class="reference external" href="https://funkyhat.github.io/demo-docs-root/types.html#cloudify.nodes.Root" title="(in Cloudify v4)">cloudify.nodes.Root</a></p>
+<p class="rubric">Properties:</p>
+<dl class="docutils">
+<dt>name</dt>
+<dd>Optional global forwarding rule name. By default it will be global forwarding rule id.</dd>
+<dt>target_proxy</dt>
+<dd>URL of a target proxy (http or https) that will receive traffic coming from specified IP address.</dd>
+<dt>gcp_config</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">A dictionary of values to pass to authenticate with the GCP API.</p>
+</dd>
+<dt>port_range</dt>
+<dd><p class="first"><strong>default:</strong> 80</p>
+<p class="last">Port number used by this forwarding rule. If packets are redirected to HTTP proxy, then possible values are 80 and 8080, in case of HTTPS proxy the only accepted value is 443.</p>
+</dd>
+<dt>additional_settings</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">Additional setting for ssl certificate</p>
+</dd>
+<dt>ip_address</dt>
+<dd>IP address associated with this forwarding rule. This address should be reserved earlier.</dd>
+<dt>use_external_resource</dt>
+<dd><p class="first"><strong>default:</strong> False</p>
+<p class="last">Indicate whether the resource exists and use existing (true) or if Cloudify should create new resource (false).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="node">
+<dt id="cloudify.gcp.nodes.TargetProxy">
+<code class="descname">cloudify.gcp.nodes.TargetProxy</code><a class="headerlink" href="#cloudify.gcp.nodes.TargetProxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>A TargetHttpProxy or TargetHttpsProxy.</p>
+<p>Specify which using the <code class="docutils literal"><span class="pre">target_proxy_type</span></code> property.</p>
+<p>Derived from: <a class="reference external" href="https://funkyhat.github.io/demo-docs-root/types.html#cloudify.nodes.Root" title="(in Cloudify v4)">cloudify.nodes.Root</a></p>
+<p class="rubric">Properties:</p>
+<dl class="docutils">
+<dt>ssl_certificate</dt>
+<dd>URL of a SSL certificate associated with this target proxy. Can and must be used only with https type proxy.</dd>
+<dt>name</dt>
+<dd>Optional target proxy name. By default it will be target proxy id.</dd>
+<dt>gcp_config</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">A dictionary of values to pass to authenticate with the GCP API.</p>
+</dd>
+<dt>additional_settings</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">Additional setting for target proxy</p>
+</dd>
+<dt>target_proxy_type</dt>
+<dd><p class="first"><strong>default:</strong> http</p>
+<p class="last">This field indicates if this target proxy is a HTTP or HTTPS based target proxy. Possible values are: &#8216;http&#8217; and &#8216;https&#8217;.</p>
+</dd>
+<dt>url_map</dt>
+<dd>URL of a URL map which specifies how traffic from this target proxy should be redirected.</dd>
+<dt>use_external_resource</dt>
+<dd><p class="first"><strong>default:</strong> False</p>
+<p class="last">Indicate whether the resource exists and use existing (true) or if Cloudify should create new resource (false).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="node">
+<dt id="cloudify.gcp.nodes.SslCertificate">
+<code class="descname">cloudify.gcp.nodes.SslCertificate</code><a class="headerlink" href="#cloudify.gcp.nodes.SslCertificate" title="Permalink to this definition">¶</a></dt>
+<dd><p>A TLS/SSL certificate and key. This will be used by a HTTPS TargetProxy to provide authenticated encryption for connecting users.</p>
+<p>Derived from: <a class="reference external" href="https://funkyhat.github.io/demo-docs-root/types.html#cloudify.nodes.Root" title="(in Cloudify v4)">cloudify.nodes.Root</a></p>
+<p class="rubric">Properties:</p>
+<dl class="docutils">
+<dt>private_key</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p>Dictionary describing private key in PEM format used to generate this SSL certificate. Expected format is:</p>
+<div class="last highlight-default"><div class="highlight"><pre><span></span><span class="nb">type</span><span class="p">:</span> <span class="n">text</span><span class="o">|</span><span class="n">file</span>
+<span class="n">data</span><span class="p">:</span> <span class="n">Private</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">PEM</span> <span class="nb">format</span> <span class="k">if</span> <span class="n">text</span><span class="p">,</span> <span class="n">otherwise</span> <span class="n">path</span> <span class="n">to</span> <span class="n">a</span> <span class="n">file</span> <span class="k">with</span> <span class="n">private</span> <span class="n">key</span>
+</pre></div>
+</div>
+</dd>
+<dt>name</dt>
+<dd>Optional SSL certificate name. By default it will be SSL certificate id.</dd>
+<dt>certificate</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p>Certificate (self-signed or obtained from CA) in PEM format. Expected format is:</p>
+<div class="last highlight-default"><div class="highlight"><pre><span></span><span class="nb">type</span><span class="p">:</span> <span class="n">text</span><span class="o">|</span><span class="n">file</span>
+<span class="n">data</span><span class="p">:</span> <span class="n">Certificate</span> <span class="ow">in</span> <span class="n">PEM</span> <span class="nb">format</span> <span class="k">if</span> <span class="n">text</span><span class="p">,</span> <span class="n">otherwise</span> <span class="n">path</span> <span class="n">to</span> <span class="n">a</span> <span class="n">file</span> <span class="k">with</span> <span class="n">certificate</span>
+</pre></div>
+</div>
+</dd>
+<dt>gcp_config</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">A dictionary of values to pass to authenticate with the GCP API.</p>
+</dd>
+<dt>additional_settings</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">Additional setting for target proxy</p>
+</dd>
+<dt>use_external_resource</dt>
+<dd><p class="first"><strong>default:</strong> False</p>
+<p class="last">Indicate whether the resource exists and use existing (true) or if Cloudify should create new resource (false).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="node">
+<dt id="cloudify.gcp.nodes.HealthCheck">
+<code class="descname">cloudify.gcp.nodes.HealthCheck</code><a class="headerlink" href="#cloudify.gcp.nodes.HealthCheck" title="Permalink to this definition">¶</a></dt>
+<dd><p>A GCP HealthCheck.</p>
+<p>This describes a method that a TargetProxy can use to verify that particualr backend Instances are functioning. Backends which fail the health check verification will be removed from the list of candidates.</p>
+<p>Derived from: <a class="reference external" href="https://funkyhat.github.io/demo-docs-root/types.html#cloudify.nodes.Root" title="(in Cloudify v4)">cloudify.nodes.Root</a></p>
+<p class="rubric">Properties:</p>
+<dl class="docutils">
+<dt>gcp_config</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">A dictionary of values to pass to authenticate with the GCP API.</p>
+</dd>
+<dt>additional_settings</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">Optional additional settings. Possible fields in dictionary are: port, request_path, timeout_sec, check_interval_sec, healthy_threshold, unhealthy_threshold.</p>
+</dd>
+<dt>health_check_type</dt>
+<dd><p class="first"><strong>default:</strong> http</p>
+<p class="last">This field indicates if this health check is a HTTP or HTTPS based health check. Possible values are: &#8216;http&#8217; and &#8216;https&#8217;.</p>
+</dd>
+<dt>use_external_resource</dt>
+<dd><p class="first"><strong>default:</strong> False</p>
+<p class="last">Indicate whether the resource exists and use existing (true) or if Cloudify should create new resource (false).</p>
+</dd>
+<dt>name</dt>
+<dd>Optional health check name. By default it will be health check id.</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="dns">
+<h3>DNS<a class="headerlink" href="#dns" title="Permalink to this headline">¶</a></h3>
+<dl class="node">
+<dt id="cloudify.gcp.nodes.DNSZone">
+<code class="descname">cloudify.gcp.nodes.DNSZone</code><a class="headerlink" href="#cloudify.gcp.nodes.DNSZone" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Cloud DNS zone.
+Represents a particular DNS domain which you wish to manage through Google Cloud DNS.
+DNS nameservers can vary between different DNSZones. In order to find the correct nameserver entries for your domain, use the <code class="docutils literal"><span class="pre">nameServers</span></code> attribute from the created zone.</p>
+<p>Derived from: <a class="reference external" href="https://funkyhat.github.io/demo-docs-root/types.html#cloudify.nodes.Root" title="(in Cloudify v4)">cloudify.nodes.Root</a></p>
+<p class="rubric">Properties:</p>
+<dl class="docutils">
+<dt>dns_name</dt>
+<dd>(fully qualified) domain name of the zone. Defaults to the instance ID.</dd>
+<dt>additional_settings</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">Additional settings</p>
+</dd>
+<dt>gcp_config</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">A dictionary of values to pass to authenticate with the GCP API.</p>
+</dd>
+<dt>use_external_resource</dt>
+<dd><p class="first"><strong>default:</strong> False</p>
+<p class="last">Indicate whether the resource exists and use existing (true)  or if Cloudify should create new resource (false).</p>
+</dd>
+<dt>name</dt>
+<dd>(internal) name of the zone. Defaults to the instance ID.</dd>
+</dl>
+</dd></dl>
+
+<dl class="node">
+<dt id="cloudify.gcp.nodes.DNSRecord">
+<code class="descname">cloudify.gcp.nodes.DNSRecord</code><a class="headerlink" href="#cloudify.gcp.nodes.DNSRecord" title="Permalink to this definition">¶</a></dt>
+<dd><p>Corresponds to a particular subdomain (or <cite>&#64;</cite> for the root) and record-type in the containing DNSZone.</p>
+<p>e.g. the <code class="docutils literal"><span class="pre">A</span></code> record for <code class="docutils literal"><span class="pre">special_service.getcloudify.org</span></code></p>
+<p>A number of convenience types are provided which update the default type (see DNSAAAARecord, DNSMXRecord, DNSTXTRecord, DNSNSRecord)</p>
+<p>Derived from: <a class="reference external" href="https://funkyhat.github.io/demo-docs-root/types.html#cloudify.nodes.Root" title="(in Cloudify v4)">cloudify.nodes.Root</a></p>
+<p class="rubric">Properties:</p>
+<dl class="docutils">
+<dt>gcp_config</dt>
+<dd><p class="first"><strong>default:</strong> {}</p>
+<p class="last">A dictionary of values to pass to authenticate with the GCP API.</p>
+</dd>
+<dt>type</dt>
+<dd><p class="first"><strong>default:</strong> A</p>
+<p class="last">The type of this DNS record. Only one record of each type is allowed with the same name within a zone.</p>
+</dd>
+<dt>name</dt>
+<dd>The subdomain. This will be prepended to the DNSZone&#8217;s dns_name to produce the full domain name for this record. Defaults to the instance ID.</dd>
+<dt>resources</dt>
+<dd><p class="first"><strong>default:</strong> []</p>
+<p class="last">List of resources which will form this record. (can be augmented using relationships cloudify.gcp.relationships.dns_record_connected_to_instance and cloudify.gcp.relationships.dns_record_connected_to_ip )</p>
+</dd>
+<dt>ttl</dt>
+<dd><p class="first"><strong>default:</strong> 86400</p>
+<p class="last">DNS entry Time To Live</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="node">
+<dt id="cloudify.gcp.nodes.DNSAAAARecord">
+<code class="descname">cloudify.gcp.nodes.DNSAAAARecord</code><a class="headerlink" href="#cloudify.gcp.nodes.DNSAAAARecord" title="Permalink to this definition">¶</a></dt>
+<dd><p>Derived from: <a class="reference internal" href="#cloudify.gcp.nodes.DNSRecord" title="cloudify.gcp.nodes.DNSRecord">cloudify.gcp.nodes.DNSRecord</a></p>
+<p class="rubric">Properties:</p>
+<dl class="docutils">
+<dt>type</dt>
+<dd><p class="first"><strong>default:</strong> AAAA</p>
+<p class="last">overridden default</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="node">
+<dt id="cloudify.gcp.nodes.DNSMXRecord">
+<code class="descname">cloudify.gcp.nodes.DNSMXRecord</code><a class="headerlink" href="#cloudify.gcp.nodes.DNSMXRecord" title="Permalink to this definition">¶</a></dt>
+<dd><p>Derived from: <a class="reference internal" href="#cloudify.gcp.nodes.DNSRecord" title="cloudify.gcp.nodes.DNSRecord">cloudify.gcp.nodes.DNSRecord</a></p>
+<p class="rubric">Properties:</p>
+<dl class="docutils">
+<dt>type</dt>
+<dd><p class="first"><strong>default:</strong> MX</p>
+<p class="last">overridden default</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="node">
+<dt id="cloudify.gcp.nodes.DNSTXTRecord">
+<code class="descname">cloudify.gcp.nodes.DNSTXTRecord</code><a class="headerlink" href="#cloudify.gcp.nodes.DNSTXTRecord" title="Permalink to this definition">¶</a></dt>
+<dd><p>Derived from: <a class="reference internal" href="#cloudify.gcp.nodes.DNSRecord" title="cloudify.gcp.nodes.DNSRecord">cloudify.gcp.nodes.DNSRecord</a></p>
+<p class="rubric">Properties:</p>
+<dl class="docutils">
+<dt>type</dt>
+<dd><p class="first"><strong>default:</strong> TXT</p>
+<p class="last">overridden default</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="node">
+<dt id="cloudify.gcp.nodes.DNSNSRecord">
+<code class="descname">cloudify.gcp.nodes.DNSNSRecord</code><a class="headerlink" href="#cloudify.gcp.nodes.DNSNSRecord" title="Permalink to this definition">¶</a></dt>
+<dd><p>Derived from: <a class="reference internal" href="#cloudify.gcp.nodes.DNSRecord" title="cloudify.gcp.nodes.DNSRecord">cloudify.gcp.nodes.DNSRecord</a></p>
+<p class="rubric">Properties:</p>
+<dl class="docutils">
+<dt>type</dt>
+<dd><p class="first"><strong>default:</strong> NS</p>
+<p class="last">overridden default</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="relationships">
+<h2>Relationships<a class="headerlink" href="#relationships" title="Permalink to this headline">¶</a></h2>
+<dl class="rel">
+<dt id="cloudify.gcp.relationships.instance_connected_to_security_group">
+<code class="descname">cloudify.gcp.relationships.instance_connected_to_security_group</code><a class="headerlink" href="#cloudify.gcp.relationships.instance_connected_to_security_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Derived from: cloudify.relationships.connected_to</p>
+</dd></dl>
+
+<dl class="rel">
+<dt id="cloudify.gcp.relationships.instance_connected_to_instance_group">
+<code class="descname">cloudify.gcp.relationships.instance_connected_to_instance_group</code><a class="headerlink" href="#cloudify.gcp.relationships.instance_connected_to_instance_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Derived from: cloudify.relationships.connected_to</p>
+</dd></dl>
+
+<dl class="rel">
+<dt id="cloudify.gcp.relationships.instance_connected_to_keypair">
+<code class="descname">cloudify.gcp.relationships.instance_connected_to_keypair</code><a class="headerlink" href="#cloudify.gcp.relationships.instance_connected_to_keypair" title="Permalink to this definition">¶</a></dt>
+<dd><p>Derived from: cloudify.relationships.connected_to</p>
+</dd></dl>
+
+<dl class="rel">
+<dt id="cloudify.gcp.relationships.dns_record_contained_in_zone">
+<code class="descname">cloudify.gcp.relationships.dns_record_contained_in_zone</code><a class="headerlink" href="#cloudify.gcp.relationships.dns_record_contained_in_zone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Derived from: cloudify.relationships.contained_in</p>
+</dd></dl>
+
+<dl class="rel">
+<dt id="cloudify.gcp.relationships.dns_record_connected_to_ip">
+<code class="descname">cloudify.gcp.relationships.dns_record_connected_to_ip</code><a class="headerlink" href="#cloudify.gcp.relationships.dns_record_connected_to_ip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Derived from: cloudify.relationships.connected_to</p>
+</dd></dl>
+
+<dl class="rel">
+<dt id="cloudify.gcp.relationships.instance_connected_to_ip">
+<code class="descname">cloudify.gcp.relationships.instance_connected_to_ip</code><a class="headerlink" href="#cloudify.gcp.relationships.instance_connected_to_ip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Derived from: cloudify.relationships.connected_to</p>
+</dd></dl>
+
+<dl class="rel">
+<dt id="cloudify.gcp.relationships.instance_connected_to_disk">
+<code class="descname">cloudify.gcp.relationships.instance_connected_to_disk</code><a class="headerlink" href="#cloudify.gcp.relationships.instance_connected_to_disk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Derived from: cloudify.relationships.connected_to</p>
+</dd></dl>
+
+<dl class="rel">
+<dt id="cloudify.gcp.relationships.forwarding_rule_connected_to_target_proxy">
+<code class="descname">cloudify.gcp.relationships.forwarding_rule_connected_to_target_proxy</code><a class="headerlink" href="#cloudify.gcp.relationships.forwarding_rule_connected_to_target_proxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Derived from: cloudify.relationships.connected_to</p>
+</dd></dl>
+
+<dl class="rel">
+<dt id="cloudify.gcp.relationships.contained_in_compute">
+<code class="descname">cloudify.gcp.relationships.contained_in_compute</code><a class="headerlink" href="#cloudify.gcp.relationships.contained_in_compute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Derived from: cloudify.relationships.contained_in</p>
+</dd></dl>
+
+<dl class="rel">
+<dt id="cloudify.gcp.relationships.contained_in_network">
+<code class="descname">cloudify.gcp.relationships.contained_in_network</code><a class="headerlink" href="#cloudify.gcp.relationships.contained_in_network" title="Permalink to this definition">¶</a></dt>
+<dd><p>Derived from: cloudify.relationships.contained_in</p>
+</dd></dl>
+
+<dl class="rel">
+<dt id="cloudify.gcp.relationships.uses_as_backend">
+<code class="descname">cloudify.gcp.relationships.uses_as_backend</code><a class="headerlink" href="#cloudify.gcp.relationships.uses_as_backend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Derived from: cloudify.relationships.connected_to</p>
+</dd></dl>
+
+<dl class="rel">
+<dt id="cloudify.gcp.relationships.dns_record_connected_to_instance">
+<code class="descname">cloudify.gcp.relationships.dns_record_connected_to_instance</code><a class="headerlink" href="#cloudify.gcp.relationships.dns_record_connected_to_instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Derived from: cloudify.relationships.connected_to</p>
+</dd></dl>
+
+<dl class="rel">
+<dt id="cloudify.gcp.relationships.instance_contained_in_network">
+<code class="descname">cloudify.gcp.relationships.instance_contained_in_network</code><a class="headerlink" href="#cloudify.gcp.relationships.instance_contained_in_network" title="Permalink to this definition">¶</a></dt>
+<dd><p>Derived from: cloudify.relationships.contained_in</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+          <div id="search-results"><gcse:searchresults-only></div>
+          <footer>
+  
+    <div class="rst-footer-buttons">
+      
+        <a href="manager.html" class="btn btn-neutral float-right" title="Using the GCP Plugin with a Manager"/>Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="cloudify-gcp-plugin documentation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <p>
+  Copyright © 2016 GigaSpaces Technologies Ltd.
+  <br>
+  </p>
+<p>
+Cloudify docs are generated using <A HREF="http://sphinx-doc.org/">Sphinx</A> using a theme provided by <a href="http://readthedocs.org">Read the Docs</a>. 
+</p>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+<h3>Versions</h3>
+<ul>
+    <li><a href="types.html">sphinx-docs</a></li>
+</ul>
+
+</body>
+</html>
