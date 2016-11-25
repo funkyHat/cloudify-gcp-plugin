@@ -1,0 +1,496 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+  
+  <title>Examples &mdash; cloudify-gcp-plugin 1.0a1 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+  <link href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.0.3/css/font-awesome.min.css' rel='stylesheet' type='text/css'>
+
+  
+  
+
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:'./',
+        VERSION:'1.0a1',
+        COLLAPSE_INDEX:false,
+        FILE_SUFFIX:'.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+    <link rel="stylesheet" href="_static/banner.css" type="text/css" />
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="cloudify-gcp-plugin 1.0a1 documentation" href="index.html"/>
+        <link rel="prev" title="Using the GCP Plugin with a Manager" href="manager.html"/> 
+
+  <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+  <style>
+    .search-reset-start {
+        color: #463E3F;
+        float: right;
+        position: relative;
+        top: -25px;
+        left: -10px;
+        z-index: 10;
+     }
+     .search-reset-start:hover {
+        cursor: pointer;
+        color: #2980B9;
+     }
+     #search-box-id {
+        padding-right: 25px;
+     }
+  </style>
+
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300'
+    rel='stylesheet' type='text/css'>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+  <!-- Google Tag Manager -->
+  <noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-PSB293" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f); })(window,document,'script','dataLayer','GTM-PSB293');</script>
+  <!-- End Google Tag Manager -->
+
+    <div class="DocSite-globalNav topNav">
+        <ul>
+            <li><a href="http://getcloudify.org/cloudifysourcetv.html" target="_blank">TUTORIALS</a></li>
+            <li><a href="http://getcloudify.org/participate.htm" target="_blank">TRAINING</a></li>
+            <li><a href="https://groups.google.com/forum/#!forum/cloudify-users" target="_blank">MAILING LIST</a></li>
+            <li><a href="http://getcloudify.org/blog/" target="_blank">BLOG</a></li>
+        </ul>
+    </div>
+
+  <a class="DocSite-nav" href="http://docs.getcloudify.org/">
+    <img class="DocSiteNav-logo"
+      src="_static/images/logo.png"
+      alt="Cloudify Logo">
+    <div class="DocSiteNav-title">
+      Cloudify Documentation
+    </div>
+  </a>
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+
+      <div style="background-color:#41b9d2;height=80px;margin:'auto auto auto auto'">
+        <a class="DocSiteProduct-header DocSiteProduct-header--core"
+           href="index.html">
+          <div class="DocSiteProduct-productName">
+            <div class="DocSiteProduct-logoText">
+                cloudify-gcp-plugin
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div id="menu-id" class="wy-menu wy-menu-vertical" data-spy="affix">
+        
+        
+            <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="types.html">Types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="types.html#common-properties">Common Properties</a></li>
+<li class="toctree-l2"><a class="reference internal" href="types.html#node-types">Node Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="types.html#id4">Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="types.html#relationships">Relationships</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="manager.html">Using the GCP Plugin with a Manager</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="manager.html#bootstrapping">Bootstrapping</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manager.html#manager-gcp-config">Manager GCP Config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manager.html#networks">Networks</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dns">DNS</a></li>
+</ul>
+</li>
+</ul>
+
+        
+
+
+    <div class="DocSite-sideNav topNav">
+       <ul class="">
+       <li><a href="http://getcloudify.org/cloudifysourcetv.html" target="_blank">TUTORIALS</a></li>
+       <li><a href="http://getcloudify.org/participate.htm" target="_blank">TRAINING</a></li>
+       <li><a href="https://groups.google.com/forum/#!forum/cloudify-users" target="_blank">MAILING LIST</a></li>
+       <li><a href="http://getcloudify.org/blog/" target="_blank">BLOG</a></li>
+       </ul>
+     </div>
+
+    
+    <div id="plugin-links">
+        <h3>Official Plugins</h3>
+        <ul>
+        
+            <li class="toctree-l1">
+                <a class="reference internal" href="https://funkyhat.github.io/cloudify-script-plugin/">
+                script</a>
+            </li>
+        
+            <li class="toctree-l1">
+                <a class="reference internal" href="https://funkyhat.github.io/cloudify-aws-plugin/">
+                aws</a>
+            </li>
+        
+            <li class="toctree-l1">
+                <a class="reference internal" href="https://funkyhat.github.io/cloudify-fabric-plugin/">
+                fabric</a>
+            </li>
+        
+            <li class="toctree-l1">
+                <a class="reference internal" href="https://funkyhat.github.io/cloudify-vsphere-plugin/">
+                vsphere</a>
+            </li>
+        
+            <li class="toctree-l1">
+                <a class="reference internal" href="https://funkyhat.github.io/cloudify-openstack-plugin/">
+                openstack</a>
+            </li>
+        
+            <li class="toctree-l1">
+                <a class="reference internal" href="https://funkyhat.github.io/cloudify-docker-plugin/">
+                docker</a>
+            </li>
+        
+            <li class="toctree-l1">
+                <a class="reference internal" href="https://funkyhat.github.io/cloudify-diamond-plugin/">
+                diamond</a>
+            </li>
+        
+            <li class="toctree-l1">
+                <a class="reference internal" href="https://funkyhat.github.io/cloudify-host-pool-plugin/">
+                host-pool</a>
+            </li>
+        
+            <li class="toctree-l1">
+                <a class="reference internal" href="https://funkyhat.github.io/cloudify-psutil-plugin/">
+                psutil</a>
+            </li>
+        
+            <li class="toctree-l1">
+                <a class="reference internal" href="https://funkyhat.github.io/tosca-vcloud-plugin/">
+                vcloud</a>
+            </li>
+        
+            <li class="toctree-l1">
+                <a class="reference internal" href="https://funkyhat.github.io/cloudify-ldap-plugin/">
+                ldap</a>
+            </li>
+        
+        </ul>
+    </div>
+    
+
+
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top">
+        <i data-toggle="wy-nav-top" class="icon icon-reorder"></i>
+        <a href="/">cloudify-gcp-plugin</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+
+          <ul class="wy-breadcrumbs">
+  <li><a href="index.html">Docs</a> &raquo;</li>
+  <li><a href="">Examples</a></li>
+  
+</ul>
+<hr/>
+
+          <div id="page-content">
+          
+  
+
+
+
+
+
+<div class="section" id="examples">
+<h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="dns">
+<h2>DNS<a class="headerlink" href="#dns" title="Permalink to this headline">¶</a></h2>
+<p>This example shows how to set up a Cloud DNS zone
+and how to connect the IP addresses from
+<a class="reference internal" href="types.html#cloudify.gcp.nodes.Instance" title="cloudify.gcp.nodes.Instance"><code class="xref cfy cfy-node docutils literal"><span class="pre">cloudify.gcp.nodes.Instance</span></code></a>
+and <a class="reference internal" href="types.html#cloudify.gcp.nodes.Address" title="cloudify.gcp.nodes.Address"><code class="xref cfy cfy-node docutils literal"><span class="pre">cloudify.gcp.nodes.Address</span></code></a>.</p>
+<p>Excerpt from <a class="reference external" href="https://github.com/cloudify-cosmo/cloudify-gcp-plugin/blob/master/system_tests/resources/dns/simple-blueprint.yaml">https://github.com/cloudify-cosmo/cloudify-gcp-plugin/blob/master/system_tests/resources/dns/simple-blueprint.yaml</a>:</p>
+<div class="highlight-yaml"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">node_templates</span><span class="p p-Indicator">:</span>
+  <span class="l l-Scalar l-Scalar-Plain">ip</span><span class="p p-Indicator">:</span>
+    <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">cloudify.gcp.nodes.Address</span>
+    <span class="l l-Scalar l-Scalar-Plain">properties</span><span class="p p-Indicator">:</span>
+      <span class="l l-Scalar l-Scalar-Plain">gcp_config</span><span class="p p-Indicator">:</span> <span class="nv">*gcp_config</span>
+
+  <span class="l l-Scalar l-Scalar-Plain">instance</span><span class="p p-Indicator">:</span>
+    <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">cloudify.gcp.nodes.Instance</span>
+    <span class="l l-Scalar l-Scalar-Plain">properties</span><span class="p p-Indicator">:</span>
+      <span class="l l-Scalar l-Scalar-Plain">image_id</span><span class="p p-Indicator">:</span> <span class="p p-Indicator">{</span> <span class="nv">get_input</span><span class="p p-Indicator">:</span> <span class="nv">image_id</span> <span class="p p-Indicator">}</span>
+      <span class="l l-Scalar l-Scalar-Plain">install_agent</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">false</span>
+      <span class="l l-Scalar l-Scalar-Plain">gcp_config</span><span class="p p-Indicator">:</span> <span class="nv">*gcp_config</span>
+    <span class="l l-Scalar l-Scalar-Plain">relationships</span><span class="p p-Indicator">:</span>
+      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">cloudify.gcp.relationships.instance_connected_to_ip</span>
+        <span class="l l-Scalar l-Scalar-Plain">target</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">ip</span>
+
+  <span class="l l-Scalar l-Scalar-Plain">zone</span><span class="p p-Indicator">:</span>
+    <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">cloudify.gcp.nodes.DNSZone</span>
+    <span class="l l-Scalar l-Scalar-Plain">properties</span><span class="p p-Indicator">:</span>
+      <span class="l l-Scalar l-Scalar-Plain">dns_name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">getcloudify.org.</span>
+      <span class="l l-Scalar l-Scalar-Plain">gcp_config</span><span class="p p-Indicator">:</span> <span class="nv">*gcp_config</span>
+
+  <span class="l l-Scalar l-Scalar-Plain">test</span><span class="p p-Indicator">:</span>
+    <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">cloudify.gcp.nodes.DNSRecord</span>
+    <span class="l l-Scalar l-Scalar-Plain">properties</span><span class="p p-Indicator">:</span>
+      <span class="l l-Scalar l-Scalar-Plain">gcp_config</span><span class="p p-Indicator">:</span> <span class="nv">*gcp_config</span>
+    <span class="l l-Scalar l-Scalar-Plain">relationships</span><span class="p p-Indicator">:</span>
+      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">cloudify.gcp.relationships.dns_record_contained_in_zone</span>
+        <span class="l l-Scalar l-Scalar-Plain">target</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">zone</span>
+      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">cloudify.gcp.relationships.dns_record_connected_to_instance</span>
+        <span class="l l-Scalar l-Scalar-Plain">target</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">instance</span>
+
+  <span class="l l-Scalar l-Scalar-Plain">direct-to-ip</span><span class="p p-Indicator">:</span>
+    <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">cloudify.gcp.nodes.DNSRecord</span>
+    <span class="l l-Scalar l-Scalar-Plain">properties</span><span class="p p-Indicator">:</span>
+      <span class="l l-Scalar l-Scalar-Plain">gcp_config</span><span class="p p-Indicator">:</span> <span class="nv">*gcp_config</span>
+    <span class="l l-Scalar l-Scalar-Plain">relationships</span><span class="p p-Indicator">:</span>
+      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">cloudify.gcp.relationships.dns_record_contained_in_zone</span>
+        <span class="l l-Scalar l-Scalar-Plain">target</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">zone</span>
+      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">cloudify.gcp.relationships.dns_record_connected_to_ip</span>
+        <span class="l l-Scalar l-Scalar-Plain">target</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">ip</span>
+
+  <span class="l l-Scalar l-Scalar-Plain">name_2</span><span class="p p-Indicator">:</span>
+    <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">cloudify.gcp.nodes.DNSRecord</span>
+    <span class="l l-Scalar l-Scalar-Plain">properties</span><span class="p p-Indicator">:</span>
+      <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">names-are-relative</span>
+      <span class="l l-Scalar l-Scalar-Plain">resources</span><span class="p p-Indicator">:</span>
+        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">127.3.4.5</span>
+      <span class="l l-Scalar l-Scalar-Plain">gcp_config</span><span class="p p-Indicator">:</span> <span class="nv">*gcp_config</span>
+    <span class="l l-Scalar l-Scalar-Plain">relationships</span><span class="p p-Indicator">:</span>
+      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">cloudify.gcp.relationships.dns_record_contained_in_zone</span>
+        <span class="l l-Scalar l-Scalar-Plain">target</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">zone</span>
+
+  <span class="l l-Scalar l-Scalar-Plain">literal-only</span><span class="p p-Indicator">:</span>
+    <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">cloudify.gcp.nodes.DNSRecord</span>
+    <span class="l l-Scalar l-Scalar-Plain">properties</span><span class="p p-Indicator">:</span>
+      <span class="l l-Scalar l-Scalar-Plain">resources</span><span class="p p-Indicator">:</span>
+        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">10.9.8.7</span>
+      <span class="l l-Scalar l-Scalar-Plain">gcp_config</span><span class="p p-Indicator">:</span> <span class="nv">*gcp_config</span>
+    <span class="l l-Scalar l-Scalar-Plain">relationships</span><span class="p p-Indicator">:</span>
+      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">cloudify.gcp.relationships.dns_record_contained_in_zone</span>
+        <span class="l l-Scalar l-Scalar-Plain">target</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">zone</span>
+
+
+<span class="l l-Scalar l-Scalar-Plain">outputs</span><span class="p p-Indicator">:</span>
+  <span class="l l-Scalar l-Scalar-Plain">nameservers</span><span class="p p-Indicator">:</span>
+    <span class="l l-Scalar l-Scalar-Plain">value</span><span class="p p-Indicator">:</span> <span class="p p-Indicator">{</span> <span class="nv">get_attribute</span><span class="p p-Indicator">:</span> <span class="p p-Indicator">[</span><span class="nv">zone</span><span class="p p-Indicator">,</span> <span class="nv">nameServers</span><span class="p p-Indicator">]</span> <span class="p p-Indicator">}</span>
+    <span class="l l-Scalar l-Scalar-Plain">description</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">should be used assigned as the nameservers for your domain</span>
+  <span class="l l-Scalar l-Scalar-Plain">ip</span><span class="p p-Indicator">:</span>
+    <span class="l l-Scalar l-Scalar-Plain">value</span><span class="p p-Indicator">:</span> <span class="p p-Indicator">{</span> <span class="nv">get_attribute</span><span class="p p-Indicator">:</span> <span class="p p-Indicator">[</span><span class="nv">ip</span><span class="p p-Indicator">,</span> <span class="nv">address</span><span class="p p-Indicator">]</span> <span class="p p-Indicator">}</span>
+</pre></div>
+</td></tr></table></div>
+<p>This will create a DNS zone with the following entries:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="19%" />
+<col width="43%" />
+<col width="37%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">node</th>
+<th class="head">name</th>
+<th class="head">maps to</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">test</span></code></td>
+<td>test.getcloudify.org</td>
+<td><code class="docutils literal"><span class="pre">instance</span></code>&#8216;s <code class="docutils literal"><span class="pre">ip</span></code> attribute</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">direct-to-ip</span></code></td>
+<td>direct-to-ip.getcloudify.org</td>
+<td><code class="docutils literal"><span class="pre">ip</span></code>&#8216;s  address</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">name_2</span></code></td>
+<td>names-are-relative.getcloudify.org</td>
+<td>127.3.4.5</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">literal-only</span></code></td>
+<td>literal-only.getcloudify.org</td>
+<td>10.9.8.7</td>
+</tr>
+</tbody>
+</table>
+<p>An important thing to note here is that the zone&#8217;s <code class="docutils literal"><span class="pre">nameServers</span></code> attribute
+must be checked <em>after</em> creating the zone and the values provided must be
+used to populate the domain name&#8217;s nameserver entries
+(the blueprint makes this visible as the <code class="docutils literal"><span class="pre">nameservers</span></code> output).</p>
+</div>
+</div>
+
+
+          </div>
+          <div id="search-results"><gcse:searchresults-only></div>
+          <footer>
+  
+    <div class="rst-footer-buttons">
+      
+      
+        <a href="manager.html" class="btn btn-neutral" title="Using the GCP Plugin with a Manager"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <p>
+  Copyright © 2016 GigaSpaces Technologies Ltd.
+  <br>
+  </p>
+<p>
+Cloudify docs are generated using <A HREF="http://sphinx-doc.org/">Sphinx</A> using a theme provided by <a href="http://readthedocs.org">Read the Docs</a>. 
+</p>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+      <span class="rst-current-version" data-toggle="rst-current-version">
+          <span class="fa fa-book"> Other Versions</span>
+          v: test-tag
+          <span class="fa fa-caret-down"></span>
+      </span>
+      <div class="rst-other-versions">
+          <dl>
+              <dt>Tags</dt>
+              <dd><a href="examples.html">test-tag</a></dd>
+          </dl>
+          <dl>
+              <dt>Branches</dt>
+              <dd><a href="../sphinx-docs/examples.html">sphinx-docs</a></dd>
+              <dd><a href="../sphinx-docs-version-test/examples.html">sphinx-docs-version-test</a></dd>
+          </dl>
+      </div>
+  </div>
+  
+  
+</body>
+</html>
